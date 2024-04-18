@@ -1,3 +1,29 @@
 body{
 	background-color: #202020;
 }
+
+.interface{
+	/* outline:green 2px solid; */
+	display: flex;
+	justify-content: center;
+}
+
+.board{
+	border: blue 1px solid;  
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.gridrow{
+	display: flex;  
+	flex-direction: row;
+	justify-content: center;
+}
+
+.cell{
+	display: block;
+	height: 40px;
+	width: 40px;
+	border: blue 1px solid;
+}
