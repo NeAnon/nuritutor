@@ -1,7 +1,10 @@
+let selectedCell;
+
 function initializePage(){
 	console.log("Page initialized!");    
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
+	selectedCell = null;
 	createGrid();
 }
 
@@ -22,6 +25,15 @@ function createGrid(){
 			let cell = document.createElement("div");
 			cell.id = i + ", " + j;
 			cell.classList.add("cell");
+			cell.addEventListener("click", ()=>{
+				if(selectedCell){
+					document.getElementById(selectedCell).classList.remove("selected");
+					selectedCell = null;
+				}
+				selectedCell = cell.id;
+				console.log(selectedCell);
+				cell.classList.add("selected");
+			});
 			row.appendChild(cell);
 		}
 	}
