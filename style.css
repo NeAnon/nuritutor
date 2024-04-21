@@ -9,7 +9,7 @@ body{
 }
 
 .board{
-	border: blue 1px solid;  
+	border: darkblue 1px solid;  
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -28,12 +28,12 @@ body{
 	display: block;
 	height: 40px;
 	width: 40px;
-	border: blue 1px solid;
+	border: darkblue 1px solid;
 }
 
 .selected{
-	border: red 1px solid;
-	outline: red 1px solid;
+	border: darkred 1px solid;
+	outline: darkred 1px solid;
 	z-index: 1;
 }
 

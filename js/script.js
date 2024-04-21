@@ -1,4 +1,5 @@
 let selectedCell;
+let puzzleArray;
 
 function initializePage(){
 	console.log("Page initialized!");    
@@ -19,6 +20,7 @@ function initializePage(){
 		}
 	});
 	createGrid();
+	puzzleArray = [];
 }
 
 function createGrid(){
@@ -65,5 +67,24 @@ function destroyGrid(){
 }
 
 function solve(){
-	console.log("solve!")
+	makeArray();
+	console.log(array);
+}
+
+function makeArray(){
+	let board = document.getElementById("board");
+	let rows = board.lastChild.lastChild.id.split(',')[0];
+	let cols = board.lastChild.lastChild.id.split(',')[1];
+	console.log(rows + " " + cols);
+	array = [];
+	for(let i = 0; i <= rows; i++){
+		array[i] = [];
+		for(let j = 0; j <= cols; j++){
+			array[i][j] = 0;
+			if(document.getElementById(i+', '+j).innerHTML){
+				array[i][j] = parseInt(document.getElementById(i+', '+j).innerHTML);
+				if(isNaN(array[i][j])){alert("Invalid input in cell " + (i+1) + ", " + (j+1));return;}
+			}
+		}
+	}
 }
