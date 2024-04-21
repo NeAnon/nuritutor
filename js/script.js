@@ -5,6 +5,15 @@ function initializePage(){
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
 	selectedCell = null;
+	document.addEventListener("keydown", (event)=>{
+		if(!selectedCell){return;}
+		if(event.key >= '0' && event.key <= '9'){
+			document.getElementById(selectedCell).innerHTML += event.key;
+		}
+		if(event.key == "Backspace"){
+			document.getElementById(selectedCell).innerHTML = "";
+		}
+	});
 	createGrid();
 }
 
