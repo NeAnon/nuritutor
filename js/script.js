@@ -1,5 +1,8 @@
 function initializePage(){
 	console.log("Page initialized!");    
+	document.getElementById("rowsInput").value = 10;
+	document.getElementById("colsInput").value = 10;
+	createGrid();
 }
 
 function createGrid(){
