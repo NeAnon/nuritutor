@@ -4,6 +4,24 @@ function initializePage(){
 
 function createGrid(){
 	destroyGrid();
+	let rows = document.getElementById("rowsInput").value;
+	let cols = document.getElementById("colsInput").value;
+	let board = document.getElementById("board");
+
+	for(let i = 0; i < rows; i++){
+		console.log("creating row " + i);
+		let row = document.createElement("div");
+		row.id = "row" + i;
+		row.classList.add("gridrow");
+		board.appendChild(row);
+		for(let j = 0; j < cols; j++){
+			console.log("creating cell " + i + ", " + j);
+			let cell = document.createElement("div");
+			cell.id = i + ", " + j;
+			cell.classList.add("cell");
+			row.appendChild(cell);
+		}
+	}
 }
 
 function destroyGrid(){

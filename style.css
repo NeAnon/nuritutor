@@ -33,3 +33,26 @@ body{
 	outline: red 1px solid;
 	z-index: 1;
 }
+
+.paramDiv{
+	display: flex;
+	flex-direction: column;
+}
+
+.inputDiv{
+	display: inherit;
+	flex-direction: row;
+	color: white;
+	width: 100px;
+} 
+
+.inputDiv label{
+	flex:auto;
+}
+
+.inputDiv input{
+	align-self: right;
+	flex-grow: 0;
+	min-width: none;
+	max-width: 20px;
+}

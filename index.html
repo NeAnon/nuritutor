@@ -8,6 +8,16 @@
 		<title>Nurikabe tutor</title>
 	</head>
 	<body onload="initializePage()">
+		<div class="paramDiv">
+			<div class="inputDiv">
+				<label>Rows:</label>
+				<input id="rowsInput"/>
+			</div>
+			<div class="inputDiv">
+				<label>Columns:</label>
+				<input id="colsInput"/>
+			</div>
+		</div>
 		<button onclick="createGrid()">Clear!</button>
 		<div id="puzzleInterface" class="interface"> <!-- Wrapper so that the board div has an outline -->
 			<div id="board" class="board"> 
