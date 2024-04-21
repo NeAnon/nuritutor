@@ -27,3 +27,9 @@ body{
 	width: 40px;
 	border: blue 1px solid;
 }
+
+.selected{
+	border: red 1px solid;
+	outline: red 1px solid;
+	z-index: 1;
+}
