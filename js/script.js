@@ -2,6 +2,10 @@ let selectedCell;
 
 function initializePage(){
 	console.log("Page initialized!");    
+
+	document.getElementById("solver").onclick = solve;
+	document.getElementById("resizer").onclick = createGrid;
+
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
 	selectedCell = null;
@@ -58,4 +62,8 @@ function destroyGrid(){
 		}
 		board.firstChild.remove();
 	}
+}
+
+function solve(){
+	console.log("solve!")
 }
