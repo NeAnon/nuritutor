@@ -70,6 +70,7 @@ function solve(){
 	makeArray();
 	console.log(array);
 	runThroughOnes();
+	checkDiagonals();
 }
 
 function makeArray(){
@@ -94,7 +95,7 @@ function runThroughOnes(){
 	for (let row = 0; row < array.length; row++) {
 		for (let col = 0; col < array[row].length; col++) {
 			if(array[row][col] == 1){
-				console.log("Found a 1 at " + row + ', ' + col);
+				console.log("Cell at (" + row + ', ' + col + ") contains a 1, therefore it shouldn't have any blank space adjacent to it.");
 				markCell(row-1, col);
 				markCell(row, col-1);
 				markCell(row, col+1);
@@ -104,13 +105,42 @@ function runThroughOnes(){
 	}
 }
 
+function checkDiagonals(){
+	for (let row = 0; row < array.length; row++) {
+		for (let col = 0; col < array[row].length; col++) {
+			if(array[row][col] > 0){
+				if(row > 0 && col > 0 && array[row-1][col-1] > 0){ //Top-left
+					console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					markCell(row-1, col);		
+					markCell(row, col-1);
+				}
+				if(row > 0 && col < array[row].length-1 && array[row-1][col+1] > 0){ //Top-right
+					console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					markCell(row-1, col);
+					markCell(row, col+1);
+				}
+				if(row < array.length-1 && col > 0 && array[row+1][col-1] > 0){ //Bottom-left
+					console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					markCell(row+1, col);
+					markCell(row, col-1);
+				}
+				if(row < array.length-1 && col < array[row].length-1 && array[row+1][col+1] > 0){ //Bottom-right
+					console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					markCell(row+1, col);
+					markCell(row, col+1);
+				}
+			}
+		}
+	}
+}
+
 function markCell(row, col){
-	if(row >= 0 && row <= array.length)
-	{
-		if(col >= 0 && col <= array[row].length)
-		{
-			document.getElementById(row + ', ' + col).classList.add('filled');
-			console.log("cell " + row + ", " + col + " filled");
+	if(row >= 0 && row <= array.length){
+		if(col >= 0 && col <= array[row].length){
+			if(!document.getElementById(row+ ', ' + col).classList.contains('filled')){
+				document.getElementById(row + ', ' + col).classList.add('filled');
+				//console.log("cell " + row + ", " + col + " filled");
+			}
 		}
 	}
 }
