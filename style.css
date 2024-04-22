@@ -59,3 +59,7 @@ body{
 	min-width: none;
 	max-width: 20px;
 }
+
+.filled{
+	background-color: lightgray;
+}

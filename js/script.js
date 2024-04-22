@@ -88,3 +88,14 @@ function makeArray(){
 		}
 	}
 }
+
+function markCell(row, col){
+	if(row >= 0 && row <= array.length)
+	{
+		if(col >= 0 && col <= array[row].length)
+		{
+			document.getElementById(row + ', ' + col).classList.add('filled');
+			console.log("cell " + row + ", " + col + " filled");
+		}
+	}
+}
