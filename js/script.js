@@ -69,6 +69,7 @@ function destroyGrid(){
 function solve(){
 	makeArray();
 	console.log(array);
+	runThroughOnes();
 }
 
 function makeArray(){
@@ -84,6 +85,20 @@ function makeArray(){
 			if(document.getElementById(i+', '+j).innerHTML){
 				array[i][j] = parseInt(document.getElementById(i+', '+j).innerHTML);
 				if(isNaN(array[i][j])){alert("Invalid input in cell " + (i+1) + ", " + (j+1));return;}
+			}
+		}
+	}
+}
+
+function runThroughOnes(){
+	for (let row = 0; row < array.length; row++) {
+		for (let col = 0; col < array[row].length; col++) {
+			if(array[row][col] == 1){
+				console.log("Found a 1 at " + row + ', ' + col);
+				markCell(row-1, col);
+				markCell(row, col-1);
+				markCell(row, col+1);
+				markCell(row+1, col);
 			}
 		}
 	}
