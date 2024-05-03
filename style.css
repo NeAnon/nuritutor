@@ -9,7 +9,7 @@ body{
 }
 
 .board{
-	border: darkblue 1px solid;  
+	border: gray 1px solid;  
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -28,7 +28,7 @@ body{
 	display: block;
 	height: 40px;
 	width: 40px;
-	border: darkblue 1px solid;
+	border: gray 1px solid;
 }
 
 .selected{

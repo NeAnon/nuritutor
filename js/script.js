@@ -135,8 +135,8 @@ function checkDiagonals(){
 }
 
 function markCell(row, col){
-	if(row >= 0 && row <= array.length){
-		if(col >= 0 && col <= array[row].length){
+	if(row >= 0 && row < array.length){
+		if(col >= 0 && col < array[row].length){
 			if(!document.getElementById(row+ ', ' + col).classList.contains('filled')){
 				document.getElementById(row + ', ' + col).classList.add('filled');
 				//console.log("cell " + row + ", " + col + " filled");
