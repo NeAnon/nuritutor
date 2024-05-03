@@ -71,7 +71,7 @@ function destroyGrid(){
 
 function solve(){
 	makeArray();
-	console.log(array);
+	console.log(puzzleArray);
 	runThroughOnes();
 	checkDiagonals();
 }
@@ -81,23 +81,25 @@ function makeArray(){
 	let rows = board.lastChild.lastChild.id.split(',')[0];
 	let cols = board.lastChild.lastChild.id.split(',')[1];
 	console.log(rows + " " + cols);
-	array = [];
+	puzzleArray = [];
+	lowestFill = -1;
+	indivCells = 0;
 	for(let i = 0; i <= rows; i++){
-		array[i] = [];
+		puzzleArray[i] = [];
 		for(let j = 0; j <= cols; j++){
-			array[i][j] = 0;
+			puzzleArray[i][j] = 0;
 			if(document.getElementById(i+', '+j).innerHTML){
-				array[i][j] = parseInt(document.getElementById(i+', '+j).innerHTML);
-				if(isNaN(array[i][j])){alert("Invalid input in cell " + (i+1) + ", " + (j+1));return;}
+				puzzleArray[i][j] = parseInt(document.getElementById(i+', '+j).innerHTML);
+				if(isNaN(puzzleArray[i][j])){alert("Invalid input in cell " + (i+1) + ", " + (j+1));return;}
 			}
 		}
 	}
 }
 
 function runThroughOnes(){
-	for (let row = 0; row < array.length; row++) {
-		for (let col = 0; col < array[row].length; col++) {
-			if(array[row][col] == 1){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] == 1){
 				console.log("Cell at (" + row + ', ' + col + ") contains a 1, therefore it shouldn't have any blank space adjacent to it.");
 				markCell(row-1, col);
 				markCell(row, col-1);
@@ -109,25 +111,25 @@ function runThroughOnes(){
 }
 
 function checkDiagonals(){
-	for (let row = 0; row < array.length; row++) {
-		for (let col = 0; col < array[row].length; col++) {
-			if(array[row][col] > 0){
-				if(row > 0 && col > 0 && array[row-1][col-1] > 0){ //Top-left
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] > 0){
+				if(row > 0 && col > 0 && puzzleArray[row-1][col-1] > 0){ //Top-left
 					console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					markCell(row-1, col);		
 					markCell(row, col-1);
 				}
-				if(row > 0 && col < array[row].length-1 && array[row-1][col+1] > 0){ //Top-right
+				if(row > 0 && col < puzzleArray[row].length-1 && puzzleArray[row-1][col+1] > 0){ //Top-right
 					console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					markCell(row-1, col);
 					markCell(row, col+1);
 				}
-				if(row < array.length-1 && col > 0 && array[row+1][col-1] > 0){ //Bottom-left
+				if(row < puzzleArray.length-1 && col > 0 && puzzleArray[row+1][col-1] > 0){ //Bottom-left
 					console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					markCell(row+1, col);
 					markCell(row, col-1);
 				}
-				if(row < array.length-1 && col < array[row].length-1 && array[row+1][col+1] > 0){ //Bottom-right
+				if(row < puzzleArray.length-1 && col < puzzleArray[row].length-1 && puzzleArray[row+1][col+1] > 0){ //Bottom-right
 					console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					markCell(row+1, col);
 					markCell(row, col+1);
@@ -138,39 +140,39 @@ function checkDiagonals(){
 }
 
 function markCell(row, col){
-	if(row >= 0 && row < array.length){
-		if(col >= 0 && col < array[row].length){
+	if(row >= 0 && row < puzzleArray.length){
+		if(col >= 0 && col < puzzleArray[row].length){
 			lowestFill--; indivCells++;
-			array[row][col] = lowestFill;
-			if(array[row][col] < -1){
+			puzzleArray[row][col] = lowestFill;
+			if(puzzleArray[row][col] < -1){
 				//Check cells around the marked one for other marked cells
-				if(row > 0 && array[row-1][col] < -1){
-					if(array[row-1][col] > array[row][col])
+				if(row > 0 && puzzleArray[row-1][col] < -1){
+					if(puzzleArray[row-1][col] > puzzleArray[row][col])
 					{
-						array[row][col] = array[row-1][col];	
+						puzzleArray[row][col] = puzzleArray[row-1][col];	
 					}
 				}
-				if(row+1 < array.length && array[row+1][col] < -1)
+				if(row+1 < puzzleArray.length && puzzleArray[row+1][col] < -1)
 				{
-					if(array[row+1][col] > array[row][col])
+					if(puzzleArray[row+1][col] > puzzleArray[row][col])
 					{
-						array[row][col] = array[row+1][col];
+						puzzleArray[row][col] = puzzleArray[row+1][col];
 					}
 				}
-				if(col > 0 && array[row][col-1] < -1){
-					if(array[row][col-1] > array[row][col])
+				if(col > 0 && puzzleArray[row][col-1] < -1){
+					if(puzzleArray[row][col-1] > puzzleArray[row][col])
 					{
-						array[row][col] = array[row][col-1];
+						puzzleArray[row][col] = puzzleArray[row][col-1];
 					}
 				}
-				if(col+1 < array.length && array[row][col+1] < -1 && array[row][col+1] > array[row][col])
+				if(col+1 < puzzleArray.length && puzzleArray[row][col+1] < -1)
 				{
-					if(array[row][col+1] > array[row][col])
+					if(puzzleArray[row][col+1] > puzzleArray[row][col])
 					{
-						array[row][col] = array[row][col+1];
+						puzzleArray[row][col] = puzzleArray[row][col+1];
 					}
 				}
-				if(array[row][col] != lowestFill){
+				if(puzzleArray[row][col] != lowestFill){
 					lowestFill++; indivCells--;
 				}
 				if(!document.getElementById(row + ', ' + col).classList.contains('filled')){
