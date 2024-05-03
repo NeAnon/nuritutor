@@ -1,5 +1,6 @@
 let selectedCell;
 let puzzleArray;
+let lowestFill; let indivCells;
 
 function initializePage(){
 	console.log("Page initialized!");    
@@ -21,6 +22,8 @@ function initializePage(){
 	});
 	createGrid();
 	puzzleArray = [];
+	lowestFill = -1;
+	indivCells = 0;
 }
 
 function createGrid(){
@@ -137,9 +140,43 @@ function checkDiagonals(){
 function markCell(row, col){
 	if(row >= 0 && row < array.length){
 		if(col >= 0 && col < array[row].length){
-			if(!document.getElementById(row+ ', ' + col).classList.contains('filled')){
-				document.getElementById(row + ', ' + col).classList.add('filled');
-				//console.log("cell " + row + ", " + col + " filled");
+			lowestFill--; indivCells++;
+			array[row][col] = lowestFill;
+			if(array[row][col] < -1){
+				//Check cells around the marked one for other marked cells
+				if(row > 0 && array[row-1][col] < -1){
+					if(array[row-1][col] > array[row][col])
+					{
+						array[row][col] = array[row-1][col];	
+					}
+				}
+				if(row+1 < array.length && array[row+1][col] < -1)
+				{
+					if(array[row+1][col] > array[row][col])
+					{
+						array[row][col] = array[row+1][col];
+					}
+				}
+				if(col > 0 && array[row][col-1] < -1){
+					if(array[row][col-1] > array[row][col])
+					{
+						array[row][col] = array[row][col-1];
+					}
+				}
+				if(col+1 < array.length && array[row][col+1] < -1 && array[row][col+1] > array[row][col])
+				{
+					if(array[row][col+1] > array[row][col])
+					{
+						array[row][col] = array[row][col+1];
+					}
+				}
+				if(array[row][col] != lowestFill){
+					lowestFill++; indivCells--;
+				}
+				if(!document.getElementById(row + ', ' + col).classList.contains('filled')){
+					document.getElementById(row + ', ' + col).classList.add('filled');
+					//console.log("cell " + row + ", " + col + " filled");
+				}
 			}
 		}
 	}
