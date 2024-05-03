@@ -180,8 +180,50 @@ function markCell(row, col){
 					document.getElementById(row + ', ' + col).classList.add('filled');
 					//console.log("cell " + row + ", " + col + " filled");
 				}
+				reMark(row, col);
 			}
 		}
+	}
+}
+
+//Function to flood lesser cells with updated values
+//This is called on a greater flooded cell (cell with a higher fillValue) to recursively flood nearby cells of lower values, if found.
+function reMark(row, col){
+	//Check cells around the marked one for other marked cells
+	console.log("remarking around " +row+", "+col);
+	if(row > 0 && puzzleArray[row-1][col] < -1){
+		if(puzzleArray[row-1][col] < puzzleArray[row][col])
+		{
+			puzzleArray[row-1][col] = puzzleArray[row][col];
+			reMark(row-1, col);	
+		}
+	}
+	if(row+1 < puzzleArray.length && puzzleArray[row+1][col] < -1)
+	{
+		if(puzzleArray[row+1][col] < puzzleArray[row][col])
+		{
+			console.log(puzzleArray[row+1][col] + "<" + puzzleArray[row][col])
+			puzzleArray[row+1][col] = puzzleArray[row][col];
+			reMark(row+1, col);	
+		}
+	}
+	if(col > 0 && puzzleArray[row][col-1] < -1){
+		if(puzzleArray[row][col-1] < puzzleArray[row][col])
+		{
+			puzzleArray[row][col-1] = puzzleArray[row][col];
+			reMark(row, col-1);	
+		}
+	}
+	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] < -1)
+	{
+		if(puzzleArray[row][col+1] < puzzleArray[row][col])
+		{
+			puzzleArray[row][col+1] = puzzleArray[row][col];
+			reMark(row, col+1);	
+		}
+	}
+	if(puzzleArray[row][col] != lowestFill){
+		lowestFill++; indivCells--;
 	}
 }
 
