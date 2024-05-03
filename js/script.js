@@ -7,6 +7,7 @@ function initializePage(){
 
 	document.getElementById("solver").onclick = solve;
 	document.getElementById("resizer").onclick = createGrid;
+	document.getElementById("debug").onclick = debugFilledCells;
 
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
@@ -181,5 +182,14 @@ function markCell(row, col){
 				}
 			}
 		}
+	}
+}
+
+function debugFilledCells(){
+	let filledCells = document.getElementsByClassName("filled");
+	console.log(filledCells);
+	for(let i = 0; i < filledCells.length; i++){
+		console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
+		filledCells[i].innerHTML = puzzleArray[parseInt(filledCells[i].id.split(',')[0])][parseInt(filledCells[i].id.split(',')[1])];
 	}
 }
