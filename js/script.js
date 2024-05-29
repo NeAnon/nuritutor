@@ -222,9 +222,10 @@ function reMark(row, col){
 			reMark(row, col+1);	
 		}
 	}
-	if(puzzleArray[row][col] != lowestFill){
-		lowestFill++; indivCells--;
-	}
+	// This is way more hassle than it's worth. All we need to check is that no cell on the board is < -2 once the board is finished
+	// if(puzzleArray[row][col] != lowestFill){
+	// 	lowestFill++; indivCells--;
+	// }
 }
 
 function debugFilledCells(){
