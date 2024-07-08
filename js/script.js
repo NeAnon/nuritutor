@@ -26,6 +26,8 @@ function initializePage(){
 	puzzleArray = [];
 	lowestFill = -1;
 	indivCells = 0;
+
+	initializeExampleButtons();
 }
 
 function createGrid(){
@@ -68,6 +70,50 @@ function destroyGrid(){
 			board.firstChild.firstChild.remove();
 		}
 		board.firstChild.remove();
+	}
+}
+
+function initializeExampleButtons(){
+	let examples = document.getElementById("examples");
+
+	examples.childNodes.forEach(child => {
+		if(child.nodeName == "BUTTON"){
+			child.addEventListener("click", ()=>{
+				setExampleBoard(child.id);
+			});
+		}
+	});
+}
+
+function setExampleBoard(exampleName){
+	console.log(exampleName);
+	if(exampleName == "sample1"){
+		
+
+		document.getElementById("rowsInput").value = 5;
+		document.getElementById("colsInput").value = 5;
+		let board = [
+						[3, 0, 0, 2, 0],
+						[0, 0, 0, 0, 0],
+						[0, 1, 0, 1, 0],
+						[0, 0, 0, 0, 0],
+						[0, 2, 0, 0, 1]
+					];
+		createPresetBoard(board);
+	}
+}
+
+function createPresetBoard(board = []){
+	createGrid();
+
+	for (let row = 0; row < board.length; row++) {
+		for (let col = 0; col < board[row].length; col++) {
+			//If the cell is blank, skip.
+			if(board[row][col] == 0){
+				continue;
+			}
+			document.getElementById(row+', '+col).innerHTML = board[row][col];
+		}
 	}
 }
 
