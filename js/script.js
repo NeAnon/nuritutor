@@ -1,6 +1,7 @@
 let selectedCell;
 let puzzleArray;
 let lowestFill; let indivCells;
+let largestField;
 
 function initializePage(){
 	console.log("Page initialized!");    
@@ -73,15 +74,22 @@ function destroyGrid(){
 function solve(){
 	makeArray();
 	console.log(puzzleArray);
+	//Starting checks (fields which can be deduced from just the initial board state)
 	runThroughOnes();
 	checkDiagonals();
 	checkNearAdjacency();
+	
+	//Start regular solving loop
+	searchStarvingCell();
 }
 
 function makeArray(){
 	let board = document.getElementById("board");
 	let rows = board.lastChild.lastChild.id.split(',')[0];
 	let cols = board.lastChild.lastChild.id.split(',')[1];
+
+	largestField = 0;
+
 	console.log(rows + " " + cols);
 	puzzleArray = [];
 	lowestFill = -1;
@@ -92,7 +100,11 @@ function makeArray(){
 			puzzleArray[i][j] = 0;
 			if(document.getElementById(i+', '+j).innerHTML){
 				puzzleArray[i][j] = parseInt(document.getElementById(i+', '+j).innerHTML);
-				if(isNaN(puzzleArray[i][j])){alert("Invalid input in cell " + (i+1) + ", " + (j+1));return;}
+				if(isNaN(puzzleArray[i][j])){
+					alert("Invalid input in cell " + (i+1) + ", " + (j+1));
+					return;
+				}
+				if(puzzleArray[i][j] > largestField){  largestField = puzzleArray;	}
 			}
 		}
 	}
@@ -253,4 +265,26 @@ function checkNearAdjacency(){
 			}
 		}
 	}
+}
+
+function searchStarvingCell(){
+	//For each existing blank cell, run through cells within (largest cell - 1) cells of the blank cell
+	//If this cell isn't in range of any other numbered cell, it can be automatically marked as filled
+	//This check is, of course, limited by filled and empty cells. The easiest way to do it, then, is by cloning the puzzleArray
+
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			
+			//If the cell isn't blank, we don't care about it yet.
+			if(puzzleArray[row][col] != 0){
+				continue;
+			}
+
+			console.log("cell (" + row + ", " + col + ") is blank.");
+
+			
+
+		}
+	}
+
 }
