@@ -1,0 +1,74 @@
+12:55 19/07/24
+
+Current puzzle to be solved:
+
+|3| | |2| |
+| | | | | |
+| |1| |1| |
+| | | | | |
+| |2| | |1|
+
+After trivial board-state checks, the board looks as follows: (. are certainly empty cells, X are filled cells)
+
+|3| | |2| |
+| |X| |X| |
+|X|1|X|1|X|
+| |X| |X|X|
+| |2| |X|1|
+
+Things to be shown: 
+
+|3| | |2| |
+| |X|o|X|o|
+|X|1|X|1|X|
+|o|X|o|X|X|
+| |2| |X|1|
+
+Cells labelled o cannot be empty, as they do not reach any hints, resulting in
+
+|3| | |2| |
+| |X|X|X|X|
+|X|1|X|1|X|
+|X|X|X|X|X|
+| |2| |X|1|
+
+The upper two rows are the most troublesome:
+The solution looks as follows: 
+
+|3| | |2| | -> |3|.|X|2|.| 
+| |X|X|X|X| -> |.|X|X|X|X| 
+
+This is because the 3-area and 2-area must be separated. But how do we tell the program this fact? 
+
+|3| | |2| |
+| |X|X|X|X|
+The only proper way I can think of right now would be to check all configurations that 3 can occupy, as the L - shaped solution is the only one which 
+does not violate the one-hint-per-area rule
+
+The program could also make a 'simple hypothesis', such as 'I will try to shade this cell, and see what happens', however that is weak reasoning
+and not easily scalable for larger boards
+
+The former proposal is more likely to work: flooding from the 3-cell into adjacent cells, and showing that regardless of which way the cells are selected, the cell beside the 3 is always empty
+Possible configurations:
+  
+|3|-|-|2| |
+| |X|X|X|X|
+
+|3|-| |2| |
+|-|X|X|X|X| 
+
+Therefore:
+
+|3|.| |2| |
+| |X|X|X|X|
+
+Subsequently:
+
+|3|.|X|2| |
+| |X|X|X|X|
+
+(two areas may not share a number)
+
+Continue as normal from there
+
+Give the user a message that "no matter the area occupied, this cell is always filled"?

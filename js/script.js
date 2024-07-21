@@ -126,7 +126,7 @@ function solve(){
 	checkNearAdjacency();
 	
 	//Start regular solving loop
-	searchStarvingCell();
+	searchStarvedCells();
 }
 
 function makeArray(){
@@ -150,7 +150,7 @@ function makeArray(){
 					alert("Invalid input in cell " + (i+1) + ", " + (j+1));
 					return;
 				}
-				if(puzzleArray[i][j] > largestField){  largestField = puzzleArray;	}
+				if(puzzleArray[i][j] > largestField){  largestField = puzzleArray[i][j];	}
 			}
 		}
 	}
@@ -313,7 +313,9 @@ function checkNearAdjacency(){
 	}
 }
 
-function searchStarvingCell(){
+function searchStarvedCells(){
+	//Searches for any starved cells (cells which are too far away to belong to a field).
+	
 	//For each existing blank cell, run through cells within (largest cell - 1) cells of the blank cell
 	//If this cell isn't in range of any other numbered cell, it can be automatically marked as filled
 	//This check is, of course, limited by filled and empty cells. The easiest way to do it, then, is by cloning the puzzleArray
@@ -328,9 +330,91 @@ function searchStarvingCell(){
 
 			console.log("cell (" + row + ", " + col + ") is blank.");
 
-			
+			console.log("cell (" + row + ", " + col + ") " + (checkCellDistance(row, col)? "will" : "will not") + " starve.");
 
 		}
 	}
+	console.log(largestField);
+}
 
+function checkCellDistance(row, col, stepsMade = 0){
+	console.log("row:" + row + "\ncol: " + col + " \nsteps: " + stepsMade);
+	//Check how far any hint-cells are from a selected empty cell. If there are valid candidates it returns true, false otherwise.
+
+	//Order of checking is up, left, right, down.
+
+	//Always checks fields as far away from the tested empty cell as possible (this means all cells largestField cells away).
+	//It should respect filled cells as obstacles, of course. 
+	//It will check some cells multiple times, but optimization is a topic for another day.
+
+	//This function is recursive for now, but it shouldn't cause any issues for now (Nurikabe hardly has hints of > 100)
+	//It also shouldn't be too hard to rewrite into an iterative loop if necessary
+
+	let starves = true;
+
+	if(stepsMade < largestField)
+	{
+
+		//Check upwards movement
+		if(row > 0 && puzzleArray[row-1][col] > -2) 			
+		{
+
+			if(puzzleArray[row-1][col] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+				console.log("Hint of value " + puzzleArray[row-1][col] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
+				return false;
+			}
+
+			starves = checkCellDistance(row-1, col, stepsMade+1);
+			if(!starves){
+				return false;
+			}
+		}
+
+		//Check leftwards movement
+		if(col > 0 && puzzleArray[row][col-1] > -2) 			
+		{
+			
+			if(puzzleArray[row][col-1] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+				console.log("Hint of value " + puzzleArray[row][col-1] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
+				return false;
+			}
+
+			starves = checkCellDistance(row, col-1, stepsMade+1);			
+			if(!starves){
+				return false;			
+			}
+		}
+
+		//Check rightwards movement
+		if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] > -2) 	
+		{
+			
+			if(puzzleArray[row][col+1] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+				console.log("Hint of value " + puzzleArray[row][col+1] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
+				return false;
+			}
+
+			starves = checkCellDistance(row, col+1, stepsMade+1);
+			if(!starves){
+				return false;
+			}
+		}
+		
+		//Check downwards movement
+		if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] > -2) 		
+		{	
+			
+			if(puzzleArray[row+1][col] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+				console.log("Hint of value " + puzzleArray[row+1][col] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
+				return false;
+			}
+
+			starves = checkCellDistance(row+1, col, stepsMade+1);
+			if(!starves){
+				return false;
+			}
+		}
+	}
+
+	return starves;
 }
