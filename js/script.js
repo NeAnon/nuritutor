@@ -328,17 +328,19 @@ function searchStarvedCells(){
 				continue;
 			}
 
-			console.log("cell (" + row + ", " + col + ") is blank.");
+			//console.log("cell (" + row + ", " + col + ") is blank.");
+			//console.log("cell (" + row + ", " + col + ") " + (checkCellDistance(row, col)? "will" : "will not") + " starve.");
 
-			console.log("cell (" + row + ", " + col + ") " + (checkCellDistance(row, col)? "will" : "will not") + " starve.");
-
+			if(checkCellDistance(row, col)){
+				//If there are any starved cells, mark them
+				markCell(row, col);
+			}
 		}
 	}
 	console.log(largestField);
 }
 
 function checkCellDistance(row, col, stepsMade = 0){
-	console.log("row:" + row + "\ncol: " + col + " \nsteps: " + stepsMade);
 	//Check how far any hint-cells are from a selected empty cell. If there are valid candidates it returns true, false otherwise.
 
 	//Order of checking is up, left, right, down.
@@ -399,7 +401,7 @@ function checkCellDistance(row, col, stepsMade = 0){
 				return false;
 			}
 		}
-		
+
 		//Check downwards movement
 		if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] > -2) 		
 		{	
