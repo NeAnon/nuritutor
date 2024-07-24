@@ -65,6 +65,11 @@ body{
 	color: black;
 }
 
+.emptied{
+	color: white;
+	background-color: black;
+}
+
 .examples{
 	color: white;
 }

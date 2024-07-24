@@ -126,7 +126,14 @@ function solve(){
 	checkNearAdjacency();
 	
 	//Start regular solving loop
+
+	//First phase: Find all ways to fill cells that should be filled
 	searchStarvedCells();
+
+	//Second phase: Empty all cells that should be emptied.
+	searchForFilled2x2s();
+
+	//Continue with emptied cells
 }
 
 function makeArray(){
@@ -146,6 +153,7 @@ function makeArray(){
 			puzzleArray[i][j] = 0;
 			if(document.getElementById(i+', '+j).innerHTML){
 				puzzleArray[i][j] = parseInt(document.getElementById(i+', '+j).innerHTML);
+				markCellBlank(i, j);
 				if(isNaN(puzzleArray[i][j])){
 					alert("Invalid input in cell " + (i+1) + ", " + (j+1));
 					return;
@@ -294,6 +302,7 @@ function debugFilledCells(){
 		console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
 		filledCells[i].innerHTML = puzzleArray[parseInt(filledCells[i].id.split(',')[0])][parseInt(filledCells[i].id.split(',')[1])];
 	}
+	console.log(puzzleArray);
 }
 
 function checkNearAdjacency(){
@@ -420,3 +429,91 @@ function checkCellDistance(row, col, stepsMade = 0){
 
 	return starves;
 }
+
+function searchForFilled2x2s(){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			
+			//If the cell isn't blank, we don't care about it yet.
+			if(puzzleArray[row][col] >= -1){
+				continue;
+			}
+
+			//console.log("cell (" + row + ", " + col + ") is blank.");
+			//console.log("cell (" + row + ", " + col + ") " + (checkCellDistance(row, col)? "will" : "will not") + " starve.");
+
+			if(row > 0 && puzzleArray[row-1][col] < 0){
+				
+				if(col > 0 && puzzleArray[row][col-1] < 0){
+					if(puzzleArray[row-1][col-1] == 0){
+						markCellBlank(row-1, col-1);
+					}
+				}
+
+				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < 0){
+					if(puzzleArray[row-1][col+1] == 0){
+						markCellBlank(row-1, col+1);
+					}
+				}
+					
+			}
+
+			if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] < 0){
+				
+				if(col > 0 && puzzleArray[row][col-1] < 0){
+					if(puzzleArray[row+1][col-1] == 0){
+						markCellBlank(row+1, col-1);
+					}
+				}
+
+				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < 0){
+					if(puzzleArray[row+1][col+1] == 0){
+						markCellBlank(row+1, col+1);
+					}
+				}
+					
+			}
+
+
+		}
+	}
+}
+
+function markCellBlank(row, col){
+	if(!document.getElementById(row + ', ' + col).classList.contains('emptied')){
+		document.getElementById(row + ', ' + col).classList.add('emptied');
+	}
+	if(puzzleArray[row][col] > 0){
+		return;
+	}
+	puzzleArray[row][col] = -1;
+	document.getElementById(row + ', ' + col).innerHTML = '.';
+	//Check cells around the marked one for other marked cells
+	if(row > 0 && puzzleArray[row-1][col] > 0){
+		if(puzzleArray[row-1][col] > puzzleArray[row][col])
+		{
+			puzzleArray[row][col] = puzzleArray[row-1][col];	
+		}
+	}
+	if(row+1 < puzzleArray.length && puzzleArray[row+1][col] > 0)
+	{
+		if(puzzleArray[row+1][col] > puzzleArray[row][col])
+		{
+			puzzleArray[row][col] = puzzleArray[row+1][col];
+		}
+	}
+	if(col > 0 && puzzleArray[row][col-1] > 0){
+		if(puzzleArray[row][col-1] > puzzleArray[row][col])
+		{
+			puzzleArray[row][col] = puzzleArray[row][col-1];
+		}
+	}
+	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] > 0)
+	{
+		if(puzzleArray[row][col+1] > puzzleArray[row][col])
+		{
+			puzzleArray[row][col] = puzzleArray[row][col+1];
+		}
+	}
+}
+
