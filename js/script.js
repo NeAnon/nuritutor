@@ -2,6 +2,7 @@ let selectedCell;
 let puzzleArray;
 let lowestFill; let indivCells;
 let largestField;
+let changed;
 
 function initializePage(){
 	console.log("Page initialized!");    
@@ -127,13 +128,17 @@ function solve(){
 	
 	//Start regular solving loop
 
-	//First phase: Find all ways to fill cells that should be filled
-	searchStarvedCells();
+	changed = true;
+	while(changed){
+		changed = false;
 
-	//Second phase: Empty all cells that should be emptied.
-	searchForFilled2x2s();
+		//First phase: Find all ways to fill cells that should be filled
+		searchStarvedCells();
 
-	//Continue with emptied cells
+		//Second phase: Empty all cells that should be emptied.
+		searchForFilled2x2s();
+	}
+
 }
 
 function makeArray(){
@@ -257,7 +262,6 @@ function markCell(row, col){
 //This is called on a greater flooded cell (cell with a higher fillValue) to recursively flood nearby cells of lower values, if found.
 function reMark(row, col){
 	//Check cells around the marked one for other marked cells
-	console.log("remarking around " +row+", "+col);
 	if(row > 0 && puzzleArray[row-1][col] < -1){
 		if(puzzleArray[row-1][col] < puzzleArray[row][col])
 		{
@@ -269,7 +273,6 @@ function reMark(row, col){
 	{
 		if(puzzleArray[row+1][col] < puzzleArray[row][col])
 		{
-			console.log(puzzleArray[row+1][col] + "<" + puzzleArray[row][col])
 			puzzleArray[row+1][col] = puzzleArray[row][col];
 			reMark(row+1, col);	
 		}
@@ -337,16 +340,16 @@ function searchStarvedCells(){
 				continue;
 			}
 
-			//console.log("cell (" + row + ", " + col + ") is blank.");
-			//console.log("cell (" + row + ", " + col + ") " + (checkCellDistance(row, col)? "will" : "will not") + " starve.");
-
 			if(checkCellDistance(row, col)){
 				//If there are any starved cells, mark them
 				markCell(row, col);
+				changed = true;
+				console.log("Cell at (" + row + ", " + col + ") is starved.");
+				return;
 			}
 		}
 	}
-	console.log(largestField);
+	// console.log(largestField);
 }
 
 function checkCellDistance(row, col, stepsMade = 0){
@@ -371,7 +374,6 @@ function checkCellDistance(row, col, stepsMade = 0){
 		{
 
 			if(puzzleArray[row-1][col] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
-				console.log("Hint of value " + puzzleArray[row-1][col] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
 				return false;
 			}
 
@@ -386,7 +388,6 @@ function checkCellDistance(row, col, stepsMade = 0){
 		{
 			
 			if(puzzleArray[row][col-1] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
-				console.log("Hint of value " + puzzleArray[row][col-1] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
 				return false;
 			}
 
@@ -401,7 +402,6 @@ function checkCellDistance(row, col, stepsMade = 0){
 		{
 			
 			if(puzzleArray[row][col+1] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
-				console.log("Hint of value " + puzzleArray[row][col+1] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
 				return false;
 			}
 
@@ -416,7 +416,6 @@ function checkCellDistance(row, col, stepsMade = 0){
 		{	
 			
 			if(puzzleArray[row+1][col] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
-				console.log("Hint of value " + puzzleArray[row+1][col] + " is within reach of the tested blank space (" + (stepsMade+1) + " steps away).")
 				return false;
 			}
 
@@ -439,20 +438,23 @@ function searchForFilled2x2s(){
 				continue;
 			}
 
-			//console.log("cell (" + row + ", " + col + ") is blank.");
-			//console.log("cell (" + row + ", " + col + ") " + (checkCellDistance(row, col)? "will" : "will not") + " starve.");
-
 			if(row > 0 && puzzleArray[row-1][col] < 0){
 				
 				if(col > 0 && puzzleArray[row][col-1] < 0){
 					if(puzzleArray[row-1][col-1] == 0){
-						markCellBlank(row-1, col-1);
+						markCellBlank(row-1, col-1);				
+						changed = true;
+						console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
+						return;
 					}
 				}
 
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < 0){
 					if(puzzleArray[row-1][col+1] == 0){
 						markCellBlank(row-1, col+1);
+						changed = true;
+						console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
+						return;
 					}
 				}
 					
@@ -461,14 +463,20 @@ function searchForFilled2x2s(){
 			if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] < 0){
 				
 				if(col > 0 && puzzleArray[row][col-1] < 0){
-					if(puzzleArray[row+1][col-1] == 0){
+					if(puzzleArray[row+1][col-1] == 0){						
 						markCellBlank(row+1, col-1);
+						changed = true;
+						console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
+						return;
 					}
 				}
 
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < 0){
 					if(puzzleArray[row+1][col+1] == 0){
 						markCellBlank(row+1, col+1);
+						changed = true;
+						console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
+						return;
 					}
 				}
 					
