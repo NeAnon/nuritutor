@@ -74,3 +74,80 @@ Continue as normal from there
 Give the user a message that "no matter the area occupied, this cell is always filled"?
 
 
+11:52 28/07/24
+
+Upon talking with a friend, I figured out how to implement this in... one way, at least, but it may be the best way to keep it solvable and communicatable
+
+The program runs through all possible floods from a numbered cell. However, if any blank cells are always filled no matter how the program floods out from the number,
+they get saved to a special queue
+
+This also introduces the concept of a 'step-queue' to the program. You have a queue of messages to relay to the end-user, containing steps to solving along with 
+instructions on how to display the steps in the program (This is going to be similar to how chess games are re-created using algebraic chess notation).
+
+The upside to this is, contrary to how I was going to show the user solving steps initially, it cuts out any internal working and allows them to go back to previous steps 
+by simply blanking out the cells changed in a given step.
+
+The issue from before is therefore easier to solve like so:
+
+Flooding out to adjacent cells always keeps the cell right next to the original hint cell empty. This is recorded to the solving stack.
+The center cell is therefore filled.
+The bottom cell is therefore blank.
+Solve the remaining 2-field accordingly.
+
+All that's left is to figure out an algorithm for getting all possible fields for a given hint-cell...
+
+
+09:56 01/08/2024
+
+Serendipity struck last night:
+
+The solution is (potentially) to expand as far as possible from the source cell, considering all cells already expanded into. 
+So for the following example:
+
+        X
+      X   X X
+    X         X
+    X   5   X
+      X   X
+        X
+
+The expansion would go as follows (with priority of going up, left, right, down):
+
+        X
+      X 3 X X
+    X 2 4 1   X
+    X   5   X
+      X   X
+        X
+
+Where the numbers are in reverse order of cells being expanded into (5 expands into 4, then into 3, etc.)
+
+Then, the lowest numbered field is moved about the space to get all possibilities for how this space may be filled.
+
+        X                   X                   X
+      X 3 X X             X 3 X X             X 3 X X
+    X 2 4     X         X 2 4     X         X 2 4     X
+    X 1 5  X            X   5 1 X           X   5   X
+      X   X               X   X               X 1 X
+        X                   X                   X
+
+After the lowest numbered field is finished being moved about, move onto the second-lowest, and repeat, the third-lowest, until we're trying to move the initial cell. 
+
+        X                   X                   X                   X                   X                   X           ...
+      X 3 X X             X 3 X X             X 3 X X             X 3 X X             X 3 X X             X 3 X X       ...
+    X 1 4 2   X         X   4 2 1 X         X   4 2   X         X   4 2   X         X   4 2   X         X 1 4     X     ...
+    X   5   X           X   5   X           X 1 5   X           X   5 1 X           X   5   X           X 2 5   X       ...
+      X   X               X   X               X   X               X   X               X 1 X               X   X         ...
+        X                   X                   X                   X                   X                   X           ...
+
+Doing this in a separate copy of the current puzzle array may be desirable, to keep track of which cells are expanded into and aren't separate hints. 
+It would also potentially allow for keeping track of which cells have already been tested, to avoid dupes.
+
+    ...         X                     X           
+    ...       X 3 X X               X 3 X X     (can't place a 1 in the -2 spot)     
+    ...     X 2 4     X    ->     X-2 4 2 1 X   (once the 3 is moved it would leave behind a -3 spot, meaning you can't place a 2 or below inside)      
+    ...     X   5   X      ->     X   5   X     
+    ...       X 1 X                 X   X              
+    ...         X                     X                
+
+Fields marked as -1 are special cases - the field automatically expands into those. If not all connected -1 fields can be filled, the attempt will be marked as invalid.

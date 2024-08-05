@@ -1,5 +1,5 @@
 let selectedCell;
-let puzzleArray;
+let puzzleArray; let testingArray;
 let lowestFill; let indivCells;
 let largestField;
 let changed;
@@ -25,6 +25,10 @@ function initializePage(){
 	});
 	createGrid();
 	puzzleArray = [];
+	testingArray = [];
+	console.log("Testing Array:");
+	console.log(testingArray);
+
 	lowestFill = -1;
 	indivCells = 0;
 
@@ -38,13 +42,13 @@ function createGrid(){
 	let board = document.getElementById("board");
 
 	for(let i = 0; i < rows; i++){
-		console.log("creating row " + i);
+		// console.log("creating row " + i);
 		let row = document.createElement("div");
 		row.id = "row" + i;
 		row.classList.add("gridrow");
 		board.appendChild(row);
 		for(let j = 0; j < cols; j++){
-			console.log("creating cell " + i + ", " + j);
+			// console.log("creating cell " + i + ", " + j);
 			let cell = document.createElement("div");
 			cell.id = i + ", " + j;
 			cell.classList.add("cell");
@@ -65,9 +69,9 @@ function createGrid(){
 function destroyGrid(){
 	let board = document.getElementById("board");
 	while(board.firstChild){
-		console.log("Destroying child with ID " + board.firstChild.id + "!");
+		// console.log("Destroying child with ID " + board.firstChild.id + "!");
 		while(board.firstChild.firstChild){
-			console.log("Destroying child with ID " + board.firstChild.firstChild.id + "!");
+			// console.log("Destroying child with ID " + board.firstChild.firstChild.id + "!");
 			board.firstChild.firstChild.remove();
 		}
 		board.firstChild.remove();
@@ -81,6 +85,8 @@ function initializeExampleButtons(){
 		if(child.nodeName == "BUTTON"){
 			child.addEventListener("click", ()=>{
 				setExampleBoard(child.id);
+				console.log(testingArray);
+
 			});
 		}
 	});
@@ -102,6 +108,21 @@ function setExampleBoard(exampleName){
 					];
 		createPresetBoard(board);
 	}
+	if(exampleName == "samplept5"){
+		
+
+		document.getElementById("rowsInput").value = 6;
+		document.getElementById("colsInput").value = 6;
+		let board = [
+						[0, 1, 0, 1, 0, 1],
+						[1, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0],
+						[0, 0, 5, 0, 0, 1],
+						[1, 0, 0, 0, 1, 0],
+						[0, 1, 0, 1, 0, 0]
+					];
+		createPresetBoard(board);
+	}
 }
 
 function createPresetBoard(board = []){
@@ -119,12 +140,18 @@ function createPresetBoard(board = []){
 }
 
 function solve(){
+	console.log("Solving started.");
+	console.log(testingArray);
+
 	makeArray();
+	console.log(testingArray);
+
 	console.log(puzzleArray);
 	//Starting checks (fields which can be deduced from just the initial board state)
 	runThroughOnes();
 	checkDiagonals();
 	checkNearAdjacency();
+	console.log(testingArray);
 	
 	//Start regular solving loop
 
@@ -137,7 +164,11 @@ function solve(){
 
 		//Second phase: Empty all cells that should be emptied.
 		searchForFilled2x2s();
-	}
+
+		}
+	console.log(testingArray);
+	
+	testHintAreas();
 
 }
 
@@ -525,3 +556,169 @@ function markCellBlank(row, col){
 	}
 }
 
+function testHintArea(dRow, dCol){
+
+	testingArray = [];
+	let protectedCells = [];
+
+	//Doing this with parse/stringify is all well and good, however copying the array this way allows for easier altering of the map 
+	//This is mostly done to prevent collisions with other fields.
+	for (let row = 0; row < puzzleArray.length; row++) {
+		testingArray[row] = [];
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			testingArray[row][col] = puzzleArray[row][col];
+			
+			if(testingArray[row][col] < -1){
+			
+				testingArray[row][col] = 'X';
+			}
+			
+			//If stumbling on a hint (or field) we want to interrogate, it will be listed here.
+			if(row == dRow && col == dCol){
+				console.log("(" + dRow + ", " + dCol + ") = " + puzzleArray[dRow][dCol]);
+				protectedCells.push([row, col]);
+				//If the field is larger than one cell, get all of the connected cells contained within
+				for(let i = 0; i < protectedCells.length && i < largestField; i++){
+					if(	protectedCells[0] > 0 && 
+						puzzleArray[protectedCells[0]-1][protectedCells[1]] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
+						protectedCells.indexOf([protectedCells[0]-1, protectedCells[1]]) == -1)
+					{
+						protectedCells.push([protectedCells[0]-1, protectedCells[1]]);
+					}
+					if(	protectedCells[0]+1 < puzzleArray.length && 
+						puzzleArray[protectedCells[0]+1][protectedCells[1]] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
+						protectedCells.indexOf([protectedCells[0]+1, protectedCells[1]]) == -1)
+					{
+						protectedCells.push([protectedCells[0]+1, protectedCells[1]]);
+					}
+					if(	protectedCells[1] > 0 && 
+						puzzleArray[protectedCells[0]][protectedCells[1]-1] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
+						protectedCells.indexOf([protectedCells[0], protectedCells[1]-1]) == -1)
+					{
+						protectedCells.push([protectedCells[0], protectedCells[1]-1]);
+					}
+					if(	protectedCells[1]+1 < puzzleArray.length && 
+						puzzleArray[protectedCells[0]][protectedCells[1]+1] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
+						protectedCells.indexOf([protectedCells[0], protectedCells[1]+1]) == -1)
+					{
+						protectedCells.push([protectedCells[0], protectedCells[1]+1]);
+					}
+				}
+			}
+		}
+	}
+
+	//Second pass to catch and isolate all of the hints
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(JSON.stringify(protectedCells).indexOf(JSON.stringify([row, col])) != -1){
+				continue;
+			}
+
+			//We already assume that adjacent cells of the field are not other hints
+			if(testingArray[row][col] > 0){
+				if(row > 0 && puzzleArray[row-1][col] != testingArray[row][col])
+				{
+					testingArray[row-1][col] = 'X';
+				}
+				if(row+1 < puzzleArray.length && puzzleArray[row+1][col] != testingArray[row][col])
+				{
+					testingArray[row+1][col] = 'X';
+				}
+				if(col > 0 && puzzleArray[row][col-1] != testingArray[row][col])
+				{
+					testingArray[row][col-1] = 'X';
+				}
+				if(col+1 < puzzleArray.length && puzzleArray[row][col+1] != testingArray[row][col])
+				{
+					testingArray[row][col+1] = 'X';
+				}
+			}
+		}
+	}
+
+	//Setup done!
+	console.log(testingArray);
+
+	//
+	let expansion = [[dRow, dCol]];
+	let possibleStates = [];
+	expand(expansion, possibleStates);
+}
+
+function testHintAreas(){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] > 1){
+				testHintArea(row, col);
+			}
+		}
+	}
+}
+
+function expand(expansion, possibleStates){
+
+	/*
+	 * Overall process:
+	 * Consider the source cell being a field
+	 * Try to expand to the furthest point up, then left available for that field.
+	 * Once the field is as large as it can be, note down the configuration
+	 * Then, try to move the newest cell to the next highest, then leftmost field not interrogated.
+	 * 
+	 *  
+	 */
+
+	let finished = false;
+	let test_cell = 0;
+	//The first cell in the expansion array is always the source hint
+	while(!finished){
+		finished = true;
+		/*
+		 * 0 = up 
+		 * 1 = left
+		 * 2 = right
+		 * 3 = down
+		 */
+		for(let direction = 0; direction <= 3; direction++)
+		{
+			for (let cell = expansion.length-1; cell >= 0; cell--) 
+			{
+				switch(direction)
+				{
+					case 0:	//up
+						//Check: within bounds?	
+						if(expansion[cell][0] > 0){
+							test_cell = testingArray[expansion[cell][0] - 1][expansion[cell][1]];
+							console.log("Test cell: " + test_cell);
+							if( test_cell <= 0 && 																	//Is the cell empty?
+								test_cell > (expansion.length - testingArray[expansion[0][0]][expansion[0][1]]))	//OR has the cell only been occupied by 
+																													//a lower rank cell? (one further away from the source)
+							{	
+								testingArray[expansion[cell][0] - 1][expansion[cell][1]] = testingArray[expansion[0][0]][expansion[0][1]] - expansion.length;
+								expansion.push([expansion[cell][0] - 1, expansion[cell][1]]);
+								console.log(expansion);
+								finished = false;
+							} else {
+								console.log("Up unavailable! Occupied by " + testingArray[expansion[cell][0] - 1][expansion[cell][1]] + 
+																	" at (" + (expansion[cell][0] - 1) + ", " + expansion[cell][1] + ").");
+							}
+						} else {
+							console.log("Up out of bounds! Row: " + expansion[cell][0]);
+						}
+						break;
+					case 1:
+						break;
+					case 2:
+						break;
+					case 3:
+						break;
+					default:
+						alert("Invalid direction.");
+						break;
+					
+				}
+			}
+		}
+	}
+	console.log(testingArray);
+}
