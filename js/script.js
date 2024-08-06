@@ -671,7 +671,7 @@ function expand(expansion, possibleStates){
 	let finished = false;
 	let test_cell = 0;
 	//The first cell in the expansion array is always the source hint
-	while(!finished){
+	limitedFlood: while(!finished){
 		finished = true;
 		/*
 		 * 0 = up 
@@ -679,6 +679,13 @@ function expand(expansion, possibleStates){
 		 * 2 = right
 		 * 3 = down
 		 */
+		if(expansion.length >= testingArray[expansion[0][0]][expansion[0][1]]){
+			printPermutation(testingArray);
+			possibleStates.push(JSON.parse(JSON.stringify(expansion)));
+			testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -1;
+			expansion.pop();
+		}
+
 		for(let direction = 0; direction <= 3; direction++)
 		{
 			for (let cell = expansion.length-1; cell >= 0; cell--) 
@@ -689,28 +696,89 @@ function expand(expansion, possibleStates){
 						//Check: within bounds?	
 						if(expansion[cell][0] > 0){
 							test_cell = testingArray[expansion[cell][0] - 1][expansion[cell][1]];
-							console.log("Test cell: " + test_cell);
+							// console.log("Test cell: " + test_cell);
 							if( test_cell <= 0 && 																	//Is the cell empty?
 								test_cell > (expansion.length - testingArray[expansion[0][0]][expansion[0][1]]))	//OR has the cell only been occupied by 
 																													//a lower rank cell? (one further away from the source)
 							{	
 								testingArray[expansion[cell][0] - 1][expansion[cell][1]] = testingArray[expansion[0][0]][expansion[0][1]] - expansion.length;
 								expansion.push([expansion[cell][0] - 1, expansion[cell][1]]);
-								console.log(expansion);
+								//console.log(expansion);
 								finished = false;
+								continue limitedFlood;
 							} else {
-								console.log("Up unavailable! Occupied by " + testingArray[expansion[cell][0] - 1][expansion[cell][1]] + 
-																	" at (" + (expansion[cell][0] - 1) + ", " + expansion[cell][1] + ").");
+								// console.log("Up unavailable! Occupied by " + testingArray[expansion[cell][0] - 1][expansion[cell][1]] + 
+								// 									" at (" + (expansion[cell][0] - 1) + ", " + expansion[cell][1] + ").");
 							}
 						} else {
-							console.log("Up out of bounds! Row: " + expansion[cell][0]);
+							// console.log("Up out of bounds! Row: " + expansion[cell][0]);
 						}
 						break;
 					case 1:
+						//Check: within bounds?	
+						if(expansion[cell][1] > 0){
+							test_cell = testingArray[expansion[cell][0]][expansion[cell][1] - 1];
+							// console.log("Test cell: " + test_cell);
+							if( test_cell <= 0 && 																	//Is the cell empty?
+								test_cell > (expansion.length - testingArray[expansion[0][0]][expansion[0][1]]))	//OR has the cell only been occupied by 
+																													//a lower rank cell? (one further away from the source)
+							{	
+								testingArray[expansion[cell][0]][expansion[cell][1] - 1] = testingArray[expansion[0][0]][expansion[0][1]] - expansion.length;
+								expansion.push([expansion[cell][0], expansion[cell][1] - 1]);
+								//console.log(expansion);
+								finished = false;
+								continue limitedFlood;
+							} else {
+								// console.log("Left unavailable! Occupied by " + testingArray[expansion[cell][0]][expansion[cell][1] - 1] + 
+								// 									" at (" + expansion[cell][0] + ", " + (expansion[cell][1] - 1) + ").");
+							}
+						} else {
+							// console.log("Left out of bounds! Column: " + expansion[cell][1]);
+						}
 						break;
 					case 2:
+						//Check: within bounds?	
+						if(expansion[cell][1] < testingArray[expansion[cell][0]].length-1){
+							test_cell = testingArray[expansion[cell][0]][expansion[cell][1] + 1];
+							// console.log("Test cell: " + test_cell);
+							if( test_cell <= 0 && 																	//Is the cell empty?
+								test_cell > (expansion.length - testingArray[expansion[0][0]][expansion[0][1]]))	//OR has the cell only been occupied by 
+																													//a lower rank cell? (one further away from the source)
+							{	
+								testingArray[expansion[cell][0]][expansion[cell][1] + 1] = testingArray[expansion[0][0]][expansion[0][1]] - expansion.length;
+								expansion.push([expansion[cell][0], expansion[cell][1] + 1]);
+								//console.log(expansion);
+								finished = false;
+								continue limitedFlood;
+							} else {
+								// console.log("Right unavailable! Occupied by " + testingArray[expansion[cell][0]][expansion[cell][1] + 1] + 
+								// 									" at (" + expansion[cell][0] + ", " + (expansion[cell][1] + 1) + ").");
+							}
+						} else {
+							// console.log("Right out of bounds! Column: " + expansion[cell][1]);
+						}
 						break;
 					case 3:
+						//Check: within bounds?	
+						if(expansion[cell][0] < testingArray.length - 1){
+							test_cell = testingArray[expansion[cell][0] + 1][expansion[cell][1]];
+							// console.log("Test cell: " + test_cell);
+							if( test_cell <= 0 && 																	//Is the cell empty?
+								test_cell > (expansion.length - testingArray[expansion[0][0]][expansion[0][1]]))	//OR has the cell only been occupied by 
+																													//a lower rank cell? (one further away from the source)
+							{	
+								testingArray[expansion[cell][0] + 1][expansion[cell][1]] = testingArray[expansion[0][0]][expansion[0][1]] - expansion.length;
+								expansion.push([expansion[cell][0] + 1, expansion[cell][1]]);
+								//console.log(expansion);
+								finished = false;
+								continue limitedFlood;
+							} else {
+								// console.log("Down unavailable! Occupied by " + testingArray[expansion[cell][0] + 1][expansion[cell][1]] + 
+								// 									" at (" + (expansion[cell][0] + 1) + ", " + expansion[cell][1] + ").");
+							}
+						} else {
+							// console.log("Down out of bounds! Row: " + expansion[cell][0]);
+						}
 						break;
 					default:
 						alert("Invalid direction.");
@@ -719,6 +787,40 @@ function expand(expansion, possibleStates){
 				}
 			}
 		}
+		//If the direction check fails, disable the last cell in the expansion.
+		if(expansion.length > 1){	
+			let deletedCell = testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]];
+			testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -deletedCell;
+			console.log("Resetting cell of rank " + deletedCell);
+			for(let i = 0; i < testingArray.length; i++){
+				for(let j = 0; j < testingArray.length; j++){
+					if(testingArray[i][j] < 0 && testingArray[i][j] > -deletedCell){
+						testingArray[i][j] = 0;
+					}
+				}	
+			}
+			expansion.pop();
+			finished = false;
+		}
 	}
-	console.log(testingArray);
+	console.log(possibleStates);
+}
+
+function printPermutation(array){
+	let output = "";
+	for(let i = 0; i < array.length; i++){
+		for(let j = 0; j < array[i].length; j++){
+			if(array[i][j] == 'X'){
+				output += "█";
+			}
+			if(array[i][j] <= 0){
+				output += " ";
+			}
+			if(array[i][j] > 0){
+				output += "░";
+			}
+		}	
+		output += '\n';
+	}
+	console.log(output);
 }
