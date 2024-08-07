@@ -579,29 +579,29 @@ function testHintArea(dRow, dCol){
 				protectedCells.push([row, col]);
 				//If the field is larger than one cell, get all of the connected cells contained within
 				for(let i = 0; i < protectedCells.length && i < largestField; i++){
-					if(	protectedCells[0] > 0 && 
-						puzzleArray[protectedCells[0]-1][protectedCells[1]] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
-						protectedCells.indexOf([protectedCells[0]-1, protectedCells[1]]) == -1)
+					if(	protectedCells[i][0] > 0 && 
+						puzzleArray[protectedCells[i][0]-1][protectedCells[i][1]] == puzzleArray[protectedCells[i][0]][protectedCells[i][1]] && 
+						JSON.stringify(protectedCells).indexOf(JSON.stringify([protectedCells[i][0]-1, protectedCells[i][1]])) == -1)
 					{
-						protectedCells.push([protectedCells[0]-1, protectedCells[1]]);
+						protectedCells.push([protectedCells[i][0]-1, protectedCells[i][1]]);
 					}
-					if(	protectedCells[0]+1 < puzzleArray.length && 
-						puzzleArray[protectedCells[0]+1][protectedCells[1]] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
-						protectedCells.indexOf([protectedCells[0]+1, protectedCells[1]]) == -1)
+					if(	protectedCells[i][0]+1 < puzzleArray.length && 
+						puzzleArray[protectedCells[i][0]+1][protectedCells[i][1]] == puzzleArray[protectedCells[i][0]][protectedCells[i][1]] && 
+						JSON.stringify(protectedCells).indexOf(JSON.stringify([protectedCells[i][0]+1, protectedCells[i][1]])) == -1)
 					{
-						protectedCells.push([protectedCells[0]+1, protectedCells[1]]);
+						protectedCells.push([protectedCells[i][0]+1, protectedCells[i][1]]);
 					}
-					if(	protectedCells[1] > 0 && 
-						puzzleArray[protectedCells[0]][protectedCells[1]-1] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
-						protectedCells.indexOf([protectedCells[0], protectedCells[1]-1]) == -1)
+					if(	protectedCells[i][1] > 0 && 
+						puzzleArray[protectedCells[i][0]][protectedCells[i][1]-1] == puzzleArray[protectedCells[i][0]][protectedCells[i][1]] && 
+						JSON.stringify(protectedCells).indexOf(JSON.stringify([protectedCells[i][0], protectedCells[i][1]-1])) == -1)
 					{
-						protectedCells.push([protectedCells[0], protectedCells[1]-1]);
+						protectedCells.push([protectedCells[i][0], protectedCells[i][1]-1]);
 					}
-					if(	protectedCells[1]+1 < puzzleArray.length && 
-						puzzleArray[protectedCells[0]][protectedCells[1]+1] == puzzleArray[protectedCells[0]][protectedCells[1]] && 
-						protectedCells.indexOf([protectedCells[0], protectedCells[1]+1]) == -1)
+					if(	protectedCells[i][1]+1 < puzzleArray.length && 
+						puzzleArray[protectedCells[i][0]][protectedCells[i][1]+1] == puzzleArray[protectedCells[i][0]][protectedCells[i][1]] && 
+						JSON.stringify(protectedCells).indexOf(JSON.stringify([protectedCells[i][0], protectedCells[i][1]+1])) == -1)
 					{
-						protectedCells.push([protectedCells[0], protectedCells[1]+1]);
+						protectedCells.push([protectedCells[i][0], protectedCells[i][1]+1]);
 					}
 				}
 			}
@@ -639,7 +639,8 @@ function testHintArea(dRow, dCol){
 
 	//Setup done!
 	console.log(testingArray);
-
+	console.log("protected cells");
+	console.log(protectedCells);
 	//
 	let expansion = [[dRow, dCol]];
 	let possibleStates = [];
@@ -803,6 +804,7 @@ function expand(expansion, possibleStates){
 			finished = false;
 		}
 	}
+	console.log("possibleStates");
 	console.log(possibleStates);
 }
 
