@@ -642,7 +642,9 @@ function testHintArea(dRow, dCol){
 	console.log("protected cells");
 	console.log(protectedCells);
 	//
-	let expansion = [[dRow, dCol]];
+	let expansion = JSON.parse(JSON.stringify(protectedCells));
+	console.log(expansion);
+	console.log("expansion done");
 	let possibleStates = [];
 	expand(expansion, possibleStates);
 }
@@ -683,8 +685,10 @@ function expand(expansion, possibleStates){
 		if(expansion.length >= testingArray[expansion[0][0]][expansion[0][1]]){
 			printPermutation(testingArray);
 			possibleStates.push(JSON.parse(JSON.stringify(expansion)));
-			testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -1;
-			expansion.pop();
+			if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] == 1){
+				testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -1;
+				expansion.pop();
+			}
 		}
 
 		for(let direction = 0; direction <= 3; direction++)
@@ -788,8 +792,8 @@ function expand(expansion, possibleStates){
 				}
 			}
 		}
-		//If the direction check fails, disable the last cell in the expansion.
-		if(expansion.length > 1){	
+		//If the direction check fails, disable the last cell in the expansion (unless that cell is contained within the original field).
+		if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] != testingArray[expansion[0][0]][expansion[0][1]]){	
 			let deletedCell = testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]];
 			testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -deletedCell;
 			console.log("Resetting cell of rank " + deletedCell);
