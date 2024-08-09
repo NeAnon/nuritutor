@@ -123,6 +123,40 @@ function setExampleBoard(exampleName){
 					];
 		createPresetBoard(board);
 	}
+	if(exampleName == "sample2"){
+		document.getElementById("rowsInput").value = 8;
+		document.getElementById("colsInput").value = 8;
+		let board = [
+						[6, 0, 3, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 4, 0, 0],
+						[0, 0, 0, 0, 2, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 0],
+						[1, 0, 0, 0, 0, 0, 0, 0],
+						[0, 2, 0, 2, 0, 1, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 6, 0, 0, 0]
+					];
+		createPresetBoard(board);
+	}
+	if(exampleName == "sample3"){
+		
+
+		document.getElementById("rowsInput").value = 10;
+		document.getElementById("colsInput").value = 10;
+		let board = [
+						[0, 2, 0, 0, 2, 0, 0, 0, 8, 0],
+						[0, 0, 0, 0, 0, 1, 0, 7, 0, 0],
+						[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 5, 0, 0, 0, 0],
+						[0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 2, 0, 0],
+						[0, 0, 0, 0, 0, 7, 0, 0, 0, 0]
+					];
+		createPresetBoard(board);
+	}
 }
 
 function createPresetBoard(board = []){
@@ -165,10 +199,13 @@ function solve(){
 		//Second phase: Empty all cells that should be emptied.
 		searchForFilled2x2s();
 
-		//For all hints, check if the hint can fill its own space to 
-		testHintAreas();	
-		}
-	console.log(testingArray);
+		//For all hints, check if the hint can fill its own space
+		expandHintAreas();	
+
+		//Make sure all filled areas can escape enclosed spaces
+		checkAllFilledAreaEscapes();
+	}
+	console.log(puzzleArray);
 	
 
 }
@@ -534,8 +571,7 @@ function markCellBlank(row, col){
 			puzzleArray[row][col] = puzzleArray[row-1][col];	
 		}
 	}
-	if(row+1 < puzzleArray.length && puzzleArray[row+1][col] > 0)
-	{
+	if(row+1 < puzzleArray.length && puzzleArray[row+1][col] > 0){
 		if(puzzleArray[row+1][col] > puzzleArray[row][col])
 		{
 			puzzleArray[row][col] = puzzleArray[row+1][col];
@@ -547,16 +583,31 @@ function markCellBlank(row, col){
 			puzzleArray[row][col] = puzzleArray[row][col-1];
 		}
 	}
-	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] > 0)
-	{
+	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] > 0){
 		if(puzzleArray[row][col+1] > puzzleArray[row][col])
 		{
 			puzzleArray[row][col] = puzzleArray[row][col+1];
 		}
 	}
+
+	//Once this is done, make sure we connect up empty but unmarked cells
+	if(puzzleArray[row][col] > 0){ 
+		if(row > 0 && puzzleArray[row-1][col] == -1){
+			markCellBlank(row-1, col);
+		}
+		if(row+1 < puzzleArray.length && puzzleArray[row+1][col] == -1){
+			markCellBlank(row+1, col);
+		}
+		if(col > 0 && puzzleArray[row][col-1] == -1){
+			markCellBlank(row, col-1);
+		}
+		if(col+1 < puzzleArray.length && puzzleArray[row][col+1] == -1){
+			markCellBlank(row, col+1);
+		}
+	}
 }
 
-function testHintArea(dRow, dCol){
+function expandHintArea(dRow, dCol){
 
 	testingArray = [];
 	let protectedCells = [];
@@ -575,7 +626,7 @@ function testHintArea(dRow, dCol){
 			
 			//If stumbling on a hint (or field) we want to interrogate, it will be listed here.
 			if(row == dRow && col == dCol){
-				console.log("(" + dRow + ", " + dCol + ") = " + puzzleArray[dRow][dCol]);
+				// console.log("(" + dRow + ", " + dCol + ") = " + puzzleArray[dRow][dCol]);
 				protectedCells.push([row, col]);
 				//If the field is larger than one cell, get all of the connected cells contained within
 				for(let i = 0; i < protectedCells.length && i < largestField; i++){
@@ -638,17 +689,17 @@ function testHintArea(dRow, dCol){
 	}
 
 	//Setup done!
-	console.log(testingArray);
-	console.log("protected cells");
-	console.log(protectedCells);
+	// console.log(testingArray);
+	// console.log("protected cells");
+	// console.log(protectedCells);
 	//
 	let expansion = JSON.parse(JSON.stringify(protectedCells));
-	console.log(expansion);
-	console.log("expansion done");
+	// console.log("expansion");
+	// console.log(expansion);
 	let possibleStates = [];
 	expand(expansion, possibleStates);
 
-	console.log(possibleStates[0]);
+	// console.log(possibleStates[0]);
 	let commonFields = JSON.parse(JSON.stringify(possibleStates[0]));
 	for(let i = 0; i < possibleStates.length; i++) {
 		for(let j = 0; j < commonFields.length; j++) {
@@ -658,27 +709,42 @@ function testHintArea(dRow, dCol){
 		}
 	}
 
-	if(possibleStates.length > 1){
-		changed = true;
-	}
-
-	console.log("Fields left");
-	console.log(commonFields);
+	// console.log("Fields left");
+	// console.log(commonFields);
 	for(let i = 0; i < commonFields.length; i++){
-		//Whatever fields are left, we mark them as part of our original field
-		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){	
+		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
+		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
 			puzzleArray[commonFields[i][0]][commonFields[i][1]] = -1;
-			markCellBlank(commonFields[i][0], commonFields[i][1]);
+			markCellBlank(commonFields[i][0], commonFields[i][1]);		
+			changed = true;
 		}
 		//This may require an external relation for tougher boards?
 	}
+
+	//If a field has been expanded completely, fill the empty cells around it
+	if(commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
+		for(let i = 0; i < commonFields.length; i++){
+			if(commonFields[i][0] > 0 && puzzleArray[commonFields[i][0]-1][commonFields[i][1]] == 0){
+				markCell(commonFields[i][0]-1,[commonFields[i][1]]);
+			}
+			if(commonFields[i][0] < puzzleArray.length-1 && puzzleArray[commonFields[i][0]+1][commonFields[i][1]] == 0){
+				markCell(commonFields[i][0]+1,[commonFields[i][1]]);
+			}
+			if(commonFields[i][1] > 0 && puzzleArray[commonFields[i][0]][commonFields[i][1]-1] == 0){
+				markCell(commonFields[i][0],[commonFields[i][1]-1]);
+			}
+			if(commonFields[i][1] < puzzleArray[0].length-1 && puzzleArray[commonFields[i][0]][commonFields[i][1]+1] == 0){
+				markCell(commonFields[i][0],[commonFields[i][1]+1]);
+			}
+		}
+	}
 }
 
-function testHintAreas(){
+function expandHintAreas(){
 	for (let row = 0; row < puzzleArray.length; row++) {
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 1){
-				testHintArea(row, col);
+				expandHintArea(row, col);
 			}
 		}
 	}
@@ -821,7 +887,7 @@ function expand(expansion, possibleStates){
 		if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] != testingArray[expansion[0][0]][expansion[0][1]]){	
 			let deletedCell = testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]];
 			testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -deletedCell;
-			console.log("Resetting cell of rank " + deletedCell);
+			// console.log("Resetting cell of rank " + deletedCell);
 			for(let i = 0; i < testingArray.length; i++){
 				for(let j = 0; j < testingArray.length; j++){
 					if(testingArray[i][j] < 0 && testingArray[i][j] > -deletedCell){
@@ -833,8 +899,8 @@ function expand(expansion, possibleStates){
 			finished = false;
 		}
 	}
-	console.log("possibleStates");
-	console.log(possibleStates);
+	// console.log("possibleStates");
+	// console.log(possibleStates);
 }
 
 function printPermutation(array){
@@ -854,4 +920,110 @@ function printPermutation(array){
 		output += '\n';
 	}
 	console.log(output);
+}
+
+function checkAllFilledAreaEscapes(){
+	if(!puzzleArray.some((row) => row.some((cell) => cell < -2))){
+		console.log("No filled cells are separate from the main area");
+		return;
+	}
+
+	let testedAreas = [];
+
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] < -1 && testedAreas.indexOf(puzzleArray[row][col]) == -1){
+				testedAreas.push(puzzleArray[row][col]);
+				checkFilledAreaEscape(row, col);
+			}
+		}
+	}
+}
+
+
+function checkFilledAreaEscape(row, col){
+	let filledArea = [[row, col]];
+	let escapes = [];
+
+
+	for(let i = 0; i < filledArea.length; i++){
+		if(	filledArea[i][0] > 0){
+			if(	puzzleArray[filledArea[i][0]-1][filledArea[i][1]] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0]-1, filledArea[i][1]])) == -1)
+			{
+				filledArea.push([filledArea[i][0]-1, filledArea[i][1]]);
+			}
+			if(	puzzleArray[filledArea[i][0]-1][filledArea[i][1]] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0]-1, filledArea[i][1]])) == -1)
+			{
+				escapes.push([filledArea[i][0]-1, filledArea[i][1]]);
+			}
+		}
+		if(	filledArea[i][0]+1 < puzzleArray.length){
+			if(	puzzleArray[filledArea[i][0]+1][filledArea[i][1]] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0]+1, filledArea[i][1]])) == -1)
+			{
+				filledArea.push([filledArea[i][0]+1, filledArea[i][1]]);
+			}
+			if(	puzzleArray[filledArea[i][0]+1][filledArea[i][1]] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0]+1, filledArea[i][1]])) == -1)
+			{
+				escapes.push([filledArea[i][0]+1, filledArea[i][1]]);
+			}
+		}
+		if(	filledArea[i][1] > 0 ){
+			if( puzzleArray[filledArea[i][0]][filledArea[i][1]-1] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]-1])) == -1)
+			{
+				filledArea.push([filledArea[i][0], filledArea[i][1]-1]);
+			}
+			if( puzzleArray[filledArea[i][0]][filledArea[i][1]-1] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]-1])) == -1)
+			{
+				escapes.push([filledArea[i][0], filledArea[i][1]-1]);
+			}
+		}
+		if(	filledArea[i][1]+1 < puzzleArray.length){
+			if(	puzzleArray[filledArea[i][0]][filledArea[i][1]+1] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]+1])) == -1)
+			{
+				filledArea.push([filledArea[i][0], filledArea[i][1]+1]);
+			}
+			if(	puzzleArray[filledArea[i][0]][filledArea[i][1]+1] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]+1])) == -1)
+			{
+				escapes.push([filledArea[i][0], filledArea[i][1]+1]);
+			}
+		}
+	}
+	console.log("filledArea");
+	console.log(filledArea);
+	console.log("escapes");
+	console.log(escapes);
+	if(escapes.length == 1){
+		markCell(escapes[0][0], escapes[0][1]);
+		//If marking the cell combined it with another cell, we can stop investigating.
+		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
+		{
+			return;
+		}
+		for(let i = 0; i < escapes.length; i++){
+			if(	escapes[i][0] > 0 && puzzleArray[escapes[i][0]-1][escapes[i][1]] == 0){
+				escapes.push([escapes[i][0]-1, escapes[i][1]]);
+			}
+			if(	escapes[i][0]+1 < puzzleArray.length && puzzleArray[escapes[i][0]+1][escapes[i][1]] == 0){
+				escapes.push([escapes[i][0]+1, escapes[i][1]]);
+			}
+			if(	escapes[i][1] > 0 && puzzleArray[escapes[i][0]][escapes[i][1]-1] == 0){
+				escapes.push([escapes[i][0], escapes[i][1]-1]);
+			}
+			if(	escapes[i][1] > puzzleArray[0].length  && puzzleArray[escapes[i][0]][escapes[i][1]+1] == 0){
+				escapes.push([escapes[i][0], escapes[i][1]+1]);
+			}
+
+			if(escapes.length > i+1){
+				break;
+			}
+		}
+	}
 }
