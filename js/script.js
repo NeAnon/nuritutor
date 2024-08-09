@@ -165,10 +165,11 @@ function solve(){
 		//Second phase: Empty all cells that should be emptied.
 		searchForFilled2x2s();
 
+		//For all hints, check if the hint can fill its own space to 
+		testHintAreas();	
 		}
 	console.log(testingArray);
 	
-	testHintAreas();
 
 }
 
@@ -376,7 +377,6 @@ function searchStarvedCells(){
 				markCell(row, col);
 				changed = true;
 				console.log("Cell at (" + row + ", " + col + ") is starved.");
-				return;
 			}
 		}
 	}
@@ -657,6 +657,11 @@ function testHintArea(dRow, dCol){
 			}
 		}
 	}
+
+	if(possibleStates.length > 1){
+		changed = true;
+	}
+
 	console.log("Fields left");
 	console.log(commonFields);
 	for(let i = 0; i < commonFields.length; i++){
