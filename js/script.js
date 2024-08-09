@@ -647,6 +647,26 @@ function testHintArea(dRow, dCol){
 	console.log("expansion done");
 	let possibleStates = [];
 	expand(expansion, possibleStates);
+
+	console.log(possibleStates[0]);
+	let commonFields = JSON.parse(JSON.stringify(possibleStates[0]));
+	for(let i = 0; i < possibleStates.length; i++) {
+		for(let j = 0; j < commonFields.length; j++) {
+			if(JSON.stringify(possibleStates[i]).indexOf(JSON.stringify(commonFields[j])) == -1) {
+				commonFields.splice(j, 1);
+			}
+		}
+	}
+	console.log("Fields left");
+	console.log(commonFields);
+	for(let i = 0; i < commonFields.length; i++){
+		//Whatever fields are left, we mark them as part of our original field
+		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){	
+			puzzleArray[commonFields[i][0]][commonFields[i][1]] = -1;
+			markCellBlank(commonFields[i][0], commonFields[i][1]);
+		}
+		//This may require an external relation for tougher boards?
+	}
 }
 
 function testHintAreas(){
