@@ -282,6 +282,7 @@ function checkDiagonals(){
 }
 
 function markCell(row, col){
+	if(puzzleArray[row][col] <= -2){return;}
 	if(row >= 0 && row < puzzleArray.length){
 		if(col >= 0 && col < puzzleArray[row].length){
 			lowestFill--; indivCells++;
@@ -506,9 +507,9 @@ function searchForFilled2x2s(){
 				continue;
 			}
 
-			if(row > 0 && puzzleArray[row-1][col] < 0){
+			if(row > 0 && puzzleArray[row-1][col] < -1){
 				
-				if(col > 0 && puzzleArray[row][col-1] < 0){
+				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row-1][col-1] == 0){
 						markCellBlank(row-1, col-1);				
 						changed = true;
@@ -517,7 +518,7 @@ function searchForFilled2x2s(){
 					}
 				}
 
-				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < 0){
+				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row-1][col+1] == 0){
 						markCellBlank(row-1, col+1);
 						changed = true;
@@ -528,9 +529,9 @@ function searchForFilled2x2s(){
 					
 			}
 
-			if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] < 0){
+			if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] < -1){
 				
-				if(col > 0 && puzzleArray[row][col-1] < 0){
+				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row+1][col-1] == 0){						
 						markCellBlank(row+1, col-1);
 						changed = true;
@@ -539,7 +540,7 @@ function searchForFilled2x2s(){
 					}
 				}
 
-				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < 0){
+				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row+1][col+1] == 0){
 						markCellBlank(row+1, col+1);
 						changed = true;
@@ -611,6 +612,8 @@ function expandHintArea(dRow, dCol){
 
 	testingArray = [];
 	let protectedCells = [];
+	let claimableCells = [];
+	let claimableCellClusters = [];
 
 	//Doing this with parse/stringify is all well and good, however copying the array this way allows for easier altering of the map 
 	//This is mostly done to prevent collisions with other fields.
@@ -622,6 +625,12 @@ function expandHintArea(dRow, dCol){
 			if(testingArray[row][col] < -1){
 			
 				testingArray[row][col] = 'X';
+			}
+
+			if(testingArray[row][col] == -1){
+			
+				testingArray[row][col] = 0;
+				claimableCells.push([row, col]);
 			}
 			
 			//If stumbling on a hint (or field) we want to interrogate, it will be listed here.
@@ -655,6 +664,39 @@ function expandHintArea(dRow, dCol){
 						protectedCells.push([protectedCells[i][0], protectedCells[i][1]+1]);
 					}
 				}
+			}
+		}
+	}
+
+	//Group all joined cells together before moving on
+	for(let i = 0; i < claimableCells.length; i++){
+		claimableCellClusters.push(claimableCells[i]);
+		for(let j = 0; j < claimableCellClusters[claimableCellClusters.length-1].length; j++){
+			//For every cell, check if the surrounding cells are also claimable. If so, list the entire bunch as one cluster.
+			//No need for out of bounds checks, as it's performed before these are added to the list
+			let indexUp = JSON.stringify(claimableCells).indexOf(	//Up
+				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]-1, claimableCellClusters[claimableCellClusters.length-1][j][1]]));
+			if(indexUp > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexUp])));
+					claimableCells.splice(indexUp, 1);
+			}
+			let indexDown = JSON.stringify(claimableCells).indexOf(	//Down
+				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]+1, claimableCellClusters[claimableCellClusters.length-1][j][1]]));
+			if(indexDown > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexDown])));
+					claimableCells.splice(indexDown, 1);
+			}
+			let indexLeft = JSON.stringify(claimableCells).indexOf(	//Left
+				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]-1]));
+			if(indexLeft > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexLeft])));
+					claimableCells.splice(indexLeft, 1);
+			}
+			let indexRight = JSON.stringify(claimableCells).indexOf(//Right
+				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]+1]));
+			if(indexRight > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexRight])));
+					claimableCells.splice(indexRight, 1);
 			}
 		}
 	}
@@ -694,10 +736,10 @@ function expandHintArea(dRow, dCol){
 	// console.log(protectedCells);
 	//
 	let expansion = JSON.parse(JSON.stringify(protectedCells));
-	// console.log("expansion");
+	// console.log("expansion from (" + expansion[0][0] + ", " + expansion[0][1] + ")");
 	// console.log(expansion);
 	let possibleStates = [];
-	expand(expansion, possibleStates);
+	expand(expansion, possibleStates, claimableCellClusters);
 
 	// console.log(possibleStates[0]);
 	let commonFields = JSON.parse(JSON.stringify(possibleStates[0]));
@@ -750,7 +792,7 @@ function expandHintAreas(){
 	}
 }
 
-function expand(expansion, possibleStates){
+function expand(expansion, possibleStates, claimableCellClusters){
 
 	/*
 	 * Overall process:
@@ -883,6 +925,28 @@ function expand(expansion, possibleStates){
 				}
 			}
 		}
+		//If the last cell added was within a cluster of free cells, add them all to the expansion
+		for(let i = 0; i < claimableCellClusters.length; i++){
+			if(JSON.stringify(claimableCellClusters[i]).indexOf(JSON.stringify(expansion[expansion.length-1])) != -1){
+				let clusterVal = testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]]; 	
+				for(let j = 0; j < claimableCellClusters[i].length; j++){
+					if(JSON.stringify(expansion).indexOf(JSON.stringify(claimableCellClusters[i][j])) == -1){
+						expansion.push(claimableCellClusters[i][j]);
+						testingArray[claimableCellClusters[i][j][0]][claimableCellClusters[i][j][1]] = clusterVal;
+					}
+				}
+				//If this expansion exceeds the total area a field can take up, we remove all of these values and don't count the expansion attempt, 
+				//marking the cells accordingly.
+				if(expansion.length > testingArray[expansion[0][0]][expansion[0][1]]){
+					while(JSON.stringify(claimableCellClusters[i]).indexOf(JSON.stringify(expansion[expansion.length-1]))){
+						testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
+						expansion.pop();
+					}
+				}
+			}
+		}
+		
+
 		//If the direction check fails, disable the last cell in the expansion (unless that cell is contained within the original field).
 		if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] != testingArray[expansion[0][0]][expansion[0][1]]){	
 			let deletedCell = testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]];
