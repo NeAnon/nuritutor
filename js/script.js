@@ -282,9 +282,9 @@ function checkDiagonals(){
 }
 
 function markCell(row, col){
-	if(puzzleArray[row][col] <= -2){return;}
 	if(row >= 0 && row < puzzleArray.length){
 		if(col >= 0 && col < puzzleArray[row].length){
+			if(puzzleArray[row][col] <= -2){return;}
 			lowestFill--; indivCells++;
 			puzzleArray[row][col] = lowestFill;
 			if(puzzleArray[row][col] < -1){
@@ -326,6 +326,8 @@ function markCell(row, col){
 			}
 		}
 	}
+	//Signal the program that something has changed.
+	changed = true;
 }
 
 //Function to flood lesser cells with updated values
@@ -413,7 +415,6 @@ function searchStarvedCells(){
 			if(checkCellDistance(row, col)){
 				//If there are any starved cells, mark them
 				markCell(row, col);
-				changed = true;
 				console.log("Cell at (" + row + ", " + col + ") is starved.");
 			}
 		}
@@ -511,8 +512,7 @@ function searchForFilled2x2s(){
 				
 				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row-1][col-1] == 0){
-						markCellBlank(row-1, col-1);				
-						changed = true;
+						markCellBlank(row-1, col-1);
 						console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
@@ -521,7 +521,6 @@ function searchForFilled2x2s(){
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row-1][col+1] == 0){
 						markCellBlank(row-1, col+1);
-						changed = true;
 						console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
@@ -534,7 +533,6 @@ function searchForFilled2x2s(){
 				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row+1][col-1] == 0){						
 						markCellBlank(row+1, col-1);
-						changed = true;
 						console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
@@ -543,7 +541,6 @@ function searchForFilled2x2s(){
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row+1][col+1] == 0){
 						markCellBlank(row+1, col+1);
-						changed = true;
 						console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
@@ -606,6 +603,8 @@ function markCellBlank(row, col){
 			markCellBlank(row, col+1);
 		}
 	}
+	//Signal the program that something has changed.
+	changed = true;
 }
 
 function expandHintArea(dRow, dCol){
@@ -758,7 +757,6 @@ function expandHintArea(dRow, dCol){
 		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
 			puzzleArray[commonFields[i][0]][commonFields[i][1]] = -1;
 			markCellBlank(commonFields[i][0], commonFields[i][1]);		
-			changed = true;
 		}
 		//This may require an external relation for tougher boards?
 	}
@@ -1002,6 +1000,7 @@ function checkAllFilledAreaEscapes(){
 			}
 		}
 	}
+	console.log((changed ? "Something's " : "Nothing's ") + "changed!");
 }
 
 
@@ -1009,6 +1008,7 @@ function checkFilledAreaEscape(row, col){
 	let filledArea = [[row, col]];
 	let escapes = [];
 
+	reMark(row, col);
 
 	for(let i = 0; i < filledArea.length; i++){
 		if(	filledArea[i][0] > 0){
