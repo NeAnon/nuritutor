@@ -335,6 +335,11 @@ function markCell(row, col){
 function reMark(row, col){
 	//Check cells around the marked one for other marked cells
 	if(row > 0 && puzzleArray[row-1][col] < -1){
+		if(puzzleArray[row-1][col] > puzzleArray[row][col])
+		{
+			reMark(row-1, col);	
+			return;
+		}
 		if(puzzleArray[row-1][col] < puzzleArray[row][col])
 		{
 			puzzleArray[row-1][col] = puzzleArray[row][col];
@@ -343,6 +348,11 @@ function reMark(row, col){
 	}
 	if(row+1 < puzzleArray.length && puzzleArray[row+1][col] < -1)
 	{
+		if(puzzleArray[row+1][col] > puzzleArray[row][col])
+		{
+			reMark(row+1, col);	
+			return;
+		}
 		if(puzzleArray[row+1][col] < puzzleArray[row][col])
 		{
 			puzzleArray[row+1][col] = puzzleArray[row][col];
@@ -350,14 +360,23 @@ function reMark(row, col){
 		}
 	}
 	if(col > 0 && puzzleArray[row][col-1] < -1){
+		if(puzzleArray[row][col-1] > puzzleArray[row][col])
+		{
+			reMark(row, col-1);	
+			return;
+		}
 		if(puzzleArray[row][col-1] < puzzleArray[row][col])
 		{
 			puzzleArray[row][col-1] = puzzleArray[row][col];
 			reMark(row, col-1);	
 		}
 	}
-	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] < -1)
-	{
+	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] < -1){		
+		if(puzzleArray[row][col+1] > puzzleArray[row][col])
+		{
+			reMark(row, col+1);	
+			return;
+		}
 		if(puzzleArray[row][col+1] < puzzleArray[row][col])
 		{
 			puzzleArray[row][col+1] = puzzleArray[row][col];
