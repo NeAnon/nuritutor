@@ -193,17 +193,28 @@ function solve(){
 	while(changed){
 		changed = false;
 
-		//First phase: Find all ways to fill cells that should be filled
-		searchStarvedCells();
-
-		//Second phase: Empty all cells that should be emptied.
+		//Make sure we aren't creating any 2x2 filled spaces (simple check so it's good to run first and often)
 		searchForFilled2x2s();
+		
+		if(!changed){
+			//Find cells that cannot be marked blank, mark them as filled instead
+			searchStarvedCells();
+		}
 
 		//For all hints, check if the hint can fill its own space
-		expandHintAreas();	
-
+		if(!changed){
+			expandHintAreas();	
+		}
+		
 		//Make sure all filled areas can escape enclosed spaces
-		checkAllFilledAreaEscapes();
+		if(!changed){
+			checkAllFilledAreaEscapes();
+		}
+
+		//Make sure no blank (but claimable) cells can be trapped within filled cells
+		if(!changed){
+			checkTrappedClaimableCells();
+		}
 	}
 	console.log(puzzleArray);
 	
@@ -383,6 +394,8 @@ function reMark(row, col){
 			reMark(row, col+1);	
 		}
 	}
+	//...Might want to re-write it so that it doesn't use recursion to check cells...
+
 	// This is way more hassle than it's worth. All we need to check is that no cell on the board is < -2 once the board is finished
 	// if(puzzleArray[row][col] != lowestFill){
 	// 	lowestFill++; indivCells--;
@@ -1000,13 +1013,13 @@ function printPermutation(array){
 	for(let i = 0; i < array.length; i++){
 		for(let j = 0; j < array[i].length; j++){
 			if(array[i][j] == 'X'){
-				output += "█";
+				output += "██";
 			}
 			if(array[i][j] <= 0){
-				output += " ";
+				output += "  ";
 			}
 			if(array[i][j] > 0){
-				output += "░";
+				output += "░░";
 			}
 		}	
 		output += '\n';
@@ -1038,7 +1051,103 @@ function checkFilledAreaEscape(row, col){
 	let filledArea = [[row, col]];
 	let escapes = [];
 
-	reMark(row, col);
+	for(let i = 0; i < filledArea.length; i++){
+		//This check is fairly cheap when called on a cell not adjacent to one of unequal value, so it's fine to check this for every surrounding cell.
+		reMark(filledArea[i][0], filledArea[i][1]);
+		if(	filledArea[i][0] > 0){
+			if(	puzzleArray[filledArea[i][0]-1][filledArea[i][1]] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0]-1, filledArea[i][1]])) == -1)
+			{
+				filledArea.push([filledArea[i][0]-1, filledArea[i][1]]);
+			}
+			if(	puzzleArray[filledArea[i][0]-1][filledArea[i][1]] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0]-1, filledArea[i][1]])) == -1)
+			{
+				escapes.push([filledArea[i][0]-1, filledArea[i][1]]);
+			}
+		}
+		if(	filledArea[i][0]+1 < puzzleArray.length){
+			if(	puzzleArray[filledArea[i][0]+1][filledArea[i][1]] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0]+1, filledArea[i][1]])) == -1)
+			{
+				filledArea.push([filledArea[i][0]+1, filledArea[i][1]]);
+			}
+			if(	puzzleArray[filledArea[i][0]+1][filledArea[i][1]] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0]+1, filledArea[i][1]])) == -1)
+			{
+				escapes.push([filledArea[i][0]+1, filledArea[i][1]]);
+			}
+		}
+		if(	filledArea[i][1] > 0 ){
+			if( puzzleArray[filledArea[i][0]][filledArea[i][1]-1] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]-1])) == -1)
+			{
+				filledArea.push([filledArea[i][0], filledArea[i][1]-1]);
+			}
+			if( puzzleArray[filledArea[i][0]][filledArea[i][1]-1] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]-1])) == -1)
+			{
+				escapes.push([filledArea[i][0], filledArea[i][1]-1]);
+			}
+		}
+		if(	filledArea[i][1]+1 < puzzleArray.length){
+			if(	puzzleArray[filledArea[i][0]][filledArea[i][1]+1] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]+1])) == -1)
+			{
+				filledArea.push([filledArea[i][0], filledArea[i][1]+1]);
+			}
+			if(	puzzleArray[filledArea[i][0]][filledArea[i][1]+1] == 0 && 
+				JSON.stringify(escapes).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]+1])) == -1)
+			{
+				escapes.push([filledArea[i][0], filledArea[i][1]+1]);
+			}
+		}
+	}
+	console.log("filledArea");
+	console.log(filledArea);
+	console.log("escapes");
+	console.log(escapes);
+	if(escapes.length == 1){
+		markCell(escapes[0][0], escapes[0][1]);
+		//If marking the cell combined it with another cell, we can stop investigating.
+		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
+		{
+			return;
+		}
+		for(let i = 0; i < escapes.length; i++){
+			if(	escapes[i][0] > 0 && puzzleArray[escapes[i][0]-1][escapes[i][1]] == 0){
+				escapes.push([escapes[i][0]-1, escapes[i][1]]);
+			}
+			if(	escapes[i][0]+1 < puzzleArray.length && puzzleArray[escapes[i][0]+1][escapes[i][1]] == 0){
+				escapes.push([escapes[i][0]+1, escapes[i][1]]);
+			}
+			if(	escapes[i][1] > 0 && puzzleArray[escapes[i][0]][escapes[i][1]-1] == 0){
+				escapes.push([escapes[i][0], escapes[i][1]-1]);
+			}
+			if(	escapes[i][1] > puzzleArray[0].length  && puzzleArray[escapes[i][0]][escapes[i][1]+1] == 0){
+				escapes.push([escapes[i][0], escapes[i][1]+1]);
+			}
+
+			if(escapes.length > i+1){
+				break;
+			}
+		}
+	}
+}
+
+function checkTrappedClaimableCells(){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] == -1){
+				checkClaimableAreaEscape(row, col);
+			}
+		}
+	}
+}
+
+function checkClaimableAreaEscape(row, col){
+	let filledArea = [[row, col]];
+	let escapes = [];
 
 	for(let i = 0; i < filledArea.length; i++){
 		if(	filledArea[i][0] > 0){
@@ -1095,7 +1204,7 @@ function checkFilledAreaEscape(row, col){
 	console.log("escapes");
 	console.log(escapes);
 	if(escapes.length == 1){
-		markCell(escapes[0][0], escapes[0][1]);
+		markCellBlank(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
 		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
 		{
