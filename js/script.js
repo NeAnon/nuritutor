@@ -372,12 +372,23 @@ function reMark(row, col){
 
 function debugFilledCells(){
 	let filledCells = document.getElementsByClassName("filled");
-	console.log(filledCells);
-	for(let i = 0; i < filledCells.length; i++){
-		console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
-		filledCells[i].innerHTML = puzzleArray[parseInt(filledCells[i].id.split(',')[0])][parseInt(filledCells[i].id.split(',')[1])];
+	//console.log(filledCells);
+	if(filledCells[0].innerHTML == ""){
+		for(let i = 0; i < filledCells.length; i++){
+			// console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
+			filledCells[i].innerHTML = puzzleArray[parseInt(filledCells[i].id.split(',')[0])][parseInt(filledCells[i].id.split(',')[1])];
+		}
+		console.log(puzzleArray);
+		return;
 	}
-	console.log(puzzleArray);
+	else{
+		for(let i = 0; i < filledCells.length; i++){
+			// console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
+			filledCells[i].innerHTML = "";
+		}
+		console.log(puzzleArray);
+		return;
+	}
 }
 
 function checkNearAdjacency(){
