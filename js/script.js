@@ -582,7 +582,7 @@ function checkCellDistance(row, col, stepsMade = 0){
 		if(row > 0 && puzzleArray[row-1][col] > -2) 			
 		{
 
-			if(puzzleArray[row-1][col] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+			if((puzzleArray[row-1][col] - fieldSize(row-1, col)) > stepsMade){ 			//Check if the hint at the tested position is within reach of the blank space
 				return false;
 			}
 
@@ -596,7 +596,7 @@ function checkCellDistance(row, col, stepsMade = 0){
 		if(col > 0 && puzzleArray[row][col-1] > -2) 			
 		{
 			
-			if(puzzleArray[row][col-1] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+			if((puzzleArray[row][col-1] - fieldSize(row, col-1)) > stepsMade){ 			//Check if the hint at the tested position is within reach of the blank space
 				return false;
 			}
 
@@ -610,7 +610,7 @@ function checkCellDistance(row, col, stepsMade = 0){
 		if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] > -2) 	
 		{
 			
-			if(puzzleArray[row][col+1] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+			if((puzzleArray[row][col+1] - fieldSize(row, col+1)) > stepsMade){ 			//Check if the hint at the tested position is within reach of the blank space
 				return false;
 			}
 
@@ -624,7 +624,7 @@ function checkCellDistance(row, col, stepsMade = 0){
 		if(row < (puzzleArray.length-1) && puzzleArray[row+1][col] > -2) 		
 		{	
 			
-			if(puzzleArray[row+1][col] > stepsMade+1){ 			//Check if the hint at the tested position is within reach of the blank space
+			if((puzzleArray[row+1][col] - fieldSize(row+1, col)) > stepsMade){ 			//Check if the hint at the tested position is within reach of the blank space
 				return false;
 			}
 
@@ -1325,4 +1325,44 @@ function checkClaimableAreaEscape(row, col){
 			}
 		}
 	}
+}
+
+function fieldSize(row, col){
+	if(puzzleArray[row][col] == 0 || puzzleArray[row][col] <= -2){
+		return 0;
+	}
+	
+	//Not sure if this is optimal for such a simple function, but it may help with cells being listed multiple times
+	fieldCells = [];
+
+	fieldCells.push([row, col]);
+	//If the field is larger than one cell, get all of the connected cells contained within
+	for(let i = 0; i < fieldCells.length && i < largestField; i++){
+		if(	fieldCells[i][0] > 0 && 
+			puzzleArray[fieldCells[i][0]-1][fieldCells[i][1]] == puzzleArray[fieldCells[i][0]][fieldCells[i][1]] && 
+			JSON.stringify(fieldCells).indexOf(JSON.stringify([fieldCells[i][0]-1, fieldCells[i][1]])) == -1)
+		{
+			fieldCells.push([fieldCells[i][0]-1, fieldCells[i][1]]);
+		}
+		if(	fieldCells[i][0]+1 < puzzleArray.length && 
+			puzzleArray[fieldCells[i][0]+1][fieldCells[i][1]] == puzzleArray[fieldCells[i][0]][fieldCells[i][1]] && 
+			JSON.stringify(fieldCells).indexOf(JSON.stringify([fieldCells[i][0]+1, fieldCells[i][1]])) == -1)
+		{
+			fieldCells.push([fieldCells[i][0]+1, fieldCells[i][1]]);
+		}
+		if(	fieldCells[i][1] > 0 && 
+			puzzleArray[fieldCells[i][0]][fieldCells[i][1]-1] == puzzleArray[fieldCells[i][0]][fieldCells[i][1]] && 
+			JSON.stringify(fieldCells).indexOf(JSON.stringify([fieldCells[i][0], fieldCells[i][1]-1])) == -1)
+		{
+			fieldCells.push([fieldCells[i][0], fieldCells[i][1]-1]);
+		}
+		if(	fieldCells[i][1]+1 < puzzleArray.length && 
+			puzzleArray[fieldCells[i][0]][fieldCells[i][1]+1] == puzzleArray[fieldCells[i][0]][fieldCells[i][1]] && 
+			JSON.stringify(fieldCells).indexOf(JSON.stringify([fieldCells[i][0], fieldCells[i][1]+1])) == -1)
+		{
+			fieldCells.push([fieldCells[i][0], fieldCells[i][1]+1]);
+		}
+	}
+
+	return fieldCells.length;
 }
