@@ -565,6 +565,16 @@ function checkCellDistance(row, col, stepsMade = 0){
 
 	let starves = true;
 
+	//Make an initial check whether the path would be adjacent to some cell which would block a path to a large enough field
+	//Due to the field-adjacency rule
+	if(	(row > 0 && puzzleArray[row-1][col] > 1 && puzzleArray[row-1][col] < stepsMade) || 
+		(col > 0 && puzzleArray[row][col-1] > 1 && puzzleArray[row][col-1] < stepsMade) || 
+		(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] > 1 && puzzleArray[row][col+1] < stepsMade) || 
+		(row < (puzzleArray.length-1) && puzzleArray[row+1][col] > 1 && puzzleArray[row+1][col] < stepsMade)) 		
+		{	
+			return true;
+		}
+
 	if(stepsMade < largestField)
 	{
 
