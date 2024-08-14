@@ -302,9 +302,14 @@ function solve(){
 			checkTrappedClaimableCells();
 		}
 		
-		//Make sure no blank (but claimable) cells can be trapped within filled cells
+		//Check if any unassigned fields need to be connected to a field with value
 		if(!changed){
 			connectUnassignedFields();
+		}
+		
+		//Check corners. This is just for the sake of completeness
+		if(!changed){
+			checkCorners();
 		}
 	}
 	console.log(puzzleArray);
@@ -1541,5 +1546,44 @@ function pathToValidHint(row, col, paths, distance){
 	//If any paths have been found, list the path taken there from the edge cell
 	for(let i = startIndex; i < paths.length; i++){
 		paths[i].push([row, col]);
+	}
+}
+
+function checkCorners(){
+	if(puzzleArray[0][0] == 0){
+		if(	(puzzleArray[0][1] == -1 || puzzleArray[0][1] > 0) && (puzzleArray[1][0] == -1 || puzzleArray[1][0] > 0)){
+			markCellBlank(0, 0);
+		}
+		if(	puzzleArray[0][1] <= -2 && puzzleArray[1][0] <= -2){
+			markCell(0,0);
+		}
+	}
+	if(puzzleArray[0][puzzleArray[0].length-1] == 0){
+		if(	(puzzleArray[0][puzzleArray[0].length-2] == -1 || puzzleArray[0][puzzleArray[0].length-2] > 0) && 
+			(puzzleArray[1][puzzleArray[0].length-1] == -1 || puzzleArray[1][puzzleArray[0].length-1] > 0)){
+			markCellBlank(0, puzzleArray[0].length-1);
+		}
+		if(	puzzleArray[0][puzzleArray[0].length-2] <= -2 && puzzleArray[1][puzzleArray[0].length-1] <= -2){
+			markCell(0,puzzleArray[0].length-1);
+		}
+	}
+
+	if(puzzleArray[puzzleArray.length-1][0] == 0){
+		if(	(puzzleArray[puzzleArray.length-1][1] == -1 || puzzleArray[puzzleArray.length-1][1] > 0) && 
+			(puzzleArray[puzzleArray.length-2][0] == -1 || puzzleArray[puzzleArray.length-2][0] > 0)){
+			markCellBlank(puzzleArray.length-1, 0);
+		}
+		if(	puzzleArray[puzzleArray.length-1][1] <= -2 && puzzleArray[puzzleArray.length-2][0] <= -2){
+			markCell(puzzleArray.length-1,0);
+		}
+	}
+	if(puzzleArray[puzzleArray.length-1][puzzleArray[0].length-1] == 0){
+		if(	(puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] == -1 || puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] > 0) && 
+			(puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] == -1 || puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] > 0)){
+			markCellBlank(puzzleArray.length-1, puzzleArray[0].length-1);
+		}
+		if(	puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] <= -2 && puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] <= -2){
+			markCell(puzzleArray.length-1,puzzleArray[0].length-1);
+		}
 	}
 }
