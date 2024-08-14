@@ -968,6 +968,9 @@ function expand(expansion, possibleStates, claimableCellClusters){
 		 */
 		if(expansion.length >= testingArray[expansion[0][0]][expansion[0][1]]){
 			//printPermutation(testingArray);
+			console.log(possibleStates);
+			//if(possibleStates.length > 500){console.log("500");	}
+			//if(possibleStates.length > 1000){possibleStates = []; return;}
 			possibleStates.push(JSON.parse(JSON.stringify(expansion)));
 			if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] == 1){
 				testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -1;
@@ -1101,7 +1104,10 @@ function expand(expansion, possibleStates, claimableCellClusters){
 		//If the direction check fails, disable the last cell in the expansion (unless that cell is contained within the original field).
 		if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] != testingArray[expansion[0][0]][expansion[0][1]]){	
 			let deletedCell = testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]];
-			testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -deletedCell;
+			while(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] == deletedCell){
+				testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -deletedCell;
+				expansion.pop();
+			}
 			// console.log("Resetting cell of rank " + deletedCell);
 			for(let i = 0; i < testingArray.length; i++){
 				for(let j = 0; j < testingArray.length; j++){
@@ -1110,7 +1116,6 @@ function expand(expansion, possibleStates, claimableCellClusters){
 					}
 				}	
 			}
-			expansion.pop();
 			finished = false;
 		}
 	}
