@@ -818,30 +818,34 @@ function expandHintArea(dRow, dCol){
 
 	//Group all joined cells together before moving on
 	for(let i = 0; i < claimableCells.length; i++){
-		claimableCellClusters.push(claimableCells[i]);
+		claimableCellClusters.push([claimableCells[i]]);
 		for(let j = 0; j < claimableCellClusters[claimableCellClusters.length-1].length; j++){
 			//For every cell, check if the surrounding cells are also claimable. If so, list the entire bunch as one cluster.
 			//No need for out of bounds checks, as it's performed before these are added to the list
-			let indexUp = JSON.stringify(claimableCells).indexOf(	//Up
-				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]-1, claimableCellClusters[claimableCellClusters.length-1][j][1]]));
+			let indexUp = claimableCells.findIndex(	function(element) { //Up				
+					return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]-1, claimableCellClusters[claimableCellClusters.length-1][j][1]]);
+				});
 			if(indexUp > i){
 					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexUp])));
 					claimableCells.splice(indexUp, 1);
 			}
-			let indexDown = JSON.stringify(claimableCells).indexOf(	//Down
-				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]+1, claimableCellClusters[claimableCellClusters.length-1][j][1]]));
+			let indexDown = claimableCells.findIndex(function(element) { //Down				
+				return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]+1, claimableCellClusters[claimableCellClusters.length-1][j][1]])
+			});
 			if(indexDown > i){
 					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexDown])));
 					claimableCells.splice(indexDown, 1);
 			}
-			let indexLeft = JSON.stringify(claimableCells).indexOf(	//Left
-				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]-1]));
+			let indexLeft = claimableCells.findIndex(	function(element) { //Up				
+				return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]-1])
+			});
 			if(indexLeft > i){
 					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexLeft])));
 					claimableCells.splice(indexLeft, 1);
 			}
-			let indexRight = JSON.stringify(claimableCells).indexOf(//Right
-				JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]+1]));
+			let indexRight = claimableCells.findIndex(	function(element) { //Up				
+				return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]+1])
+			});
 			if(indexRight > i){
 					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexRight])));
 					claimableCells.splice(indexRight, 1);
