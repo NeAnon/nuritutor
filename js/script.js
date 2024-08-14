@@ -301,6 +301,11 @@ function solve(){
 		if(!changed){
 			checkTrappedClaimableCells();
 		}
+		
+		//Make sure no blank (but claimable) cells can be trapped within filled cells
+		if(!changed){
+			connectUnassignedFields();
+		}
 	}
 	console.log(puzzleArray);
 	
@@ -953,7 +958,7 @@ function expand(expansion, possibleStates, claimableCellClusters){
 		 * 3 = down
 		 */
 		if(expansion.length >= testingArray[expansion[0][0]][expansion[0][1]]){
-			printPermutation(testingArray);
+			//printPermutation(testingArray);
 			possibleStates.push(JSON.parse(JSON.stringify(expansion)));
 			if(testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] == 1){
 				testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] = -1;
@@ -1365,4 +1370,176 @@ function fieldSize(row, col){
 	}
 
 	return fieldCells.length;
+}
+
+function connectUnassignedFields(){
+	//Same premise as a cross between checking filled area escapes and expanding hint areas
+	//All empty unassigned fields are going to be grouped together, then each one is going to search for all paths leading to a (valid) field
+	//Then all common cells between the two are going to be marked as empty
+
+	console.log("CUF");
+
+	let claimableCells = [];
+	let claimableCellClusters = [];
+
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] == -1){
+				claimableCells.push([row, col]);
+			}
+		}
+	}
+
+	console.log(claimableCells);
+
+
+	//Group all joined cells together before moving on
+	for(let i = 0; i < claimableCells.length; i++){
+		claimableCellClusters.push([claimableCells[i]]);
+		for(let j = 0; j < claimableCellClusters[claimableCellClusters.length-1].length; j++){
+			//For every cell, check if the surrounding cells are also claimable. If so, list the entire bunch as one cluster.
+			//No need for out of bounds checks, as it's performed before these are added to the list
+			let indexUp = claimableCells.findIndex(	function(element) { //Up				
+					return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]-1, claimableCellClusters[claimableCellClusters.length-1][j][1]]);
+				});
+			if(indexUp > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexUp])));
+					claimableCells.splice(indexUp, 1);
+			}
+			let indexDown = claimableCells.findIndex(function(element) { //Down				
+				return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]+1, claimableCellClusters[claimableCellClusters.length-1][j][1]])
+			});
+			if(indexDown > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexDown])));
+					claimableCells.splice(indexDown, 1);
+			}
+			let indexLeft = claimableCells.findIndex(	function(element) { //Up				
+				return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]-1])
+			});
+			if(indexLeft > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexLeft])));
+					claimableCells.splice(indexLeft, 1);
+			}
+			let indexRight = claimableCells.findIndex(	function(element) { //Up				
+				return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0], claimableCellClusters[claimableCellClusters.length-1][j][1]+1])
+			});
+			if(indexRight > i){
+					claimableCellClusters[claimableCellClusters.length-1].push(JSON.parse(JSON.stringify(claimableCells[indexRight])));
+					claimableCells.splice(indexRight, 1);
+			}
+		}
+		// Need to fix this in that other spot too... Don't know how it worked otherwise. Completely exclusionary?
+	}
+	
+	claimableCellClusters.forEach(cluster => {
+		findUFieldConnection(cluster);
+	});
+}
+
+function findUFieldConnection(claimableCellCluster){
+	let edgeCells = [];
+	claimableCellCluster.forEach(cell => {
+		if(	(cell[0] > 0 && puzzleArray[cell[0]-1][cell[1]] == 0) ||
+			(cell[1] > 0 && puzzleArray[cell[0]][cell[1]-1] == 0) ||
+			(cell[1] < puzzleArray[cell[0]].length-1 && puzzleArray[cell[0]][cell[1]+1] == 0) ||
+			(cell[0] < puzzleArray.length-1 && puzzleArray[cell[0]+1][cell[1]] == 0))
+		{
+			edgeCells.push(cell);
+		}
+	});
+
+	let size = fieldSize(edgeCells[0][0], edgeCells[0][1]);
+	let validPaths = [];
+
+	edgeCells.forEach((cell) => {
+		console.log("pathing from cell " + cell[0] + ", " + cell[1]);
+		pathToValidHint(cell[0], cell[1], validPaths, size);
+	});
+
+
+	//If some fields are common among all paths, they'll have to be filled in
+	let commonFields = JSON.parse(JSON.stringify(validPaths[0]));
+	for(let i = 0; i < validPaths.length; i++) {
+		for(let j = 0; j < commonFields.length; j++) {
+			if(JSON.stringify(validPaths[i]).indexOf(JSON.stringify(commonFields[j])) == -1) {
+				commonFields.splice(j, 1);
+			}
+		}
+	}
+
+	// console.log("Fields left");
+	// console.log(commonFields);
+	for(let i = 0; i < commonFields.length; i++){
+		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
+		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
+			markCellBlank(commonFields[i][0], commonFields[i][1]);		
+		}
+	}
+}	
+
+function pathToValidHint(row, col, paths, distance){
+	let startIndex = paths.length;
+	//Avoid linking together unmarked fields if we can help it
+	if(row > 0 && puzzleArray[row-1][col] >= 0){
+		//If we're reaching the limit with next field expanded into, there's no point continuing.
+		if(puzzleArray[row-1][col] == 0 && distance < (largestField-1)){
+			pathToValidHint(row-1, col, paths, distance+1);
+		}
+		if(puzzleArray[row-1][col] > 0)
+		{
+			//If we still have enough cells left to connect to that field, we note it down
+			if(distance <= (puzzleArray[row-1][col] - fieldSize(row-1, col))){
+				paths.push([[row, col]]);
+			}
+			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
+		}
+	}	
+	if(col > 0 && puzzleArray[row][col-1] >= 0){
+		//If we're reaching the limit with next field expanded into, there's no point continuing.
+		if(puzzleArray[row][col-1] == 0 && distance < (largestField-1)){
+			pathToValidHint(row, col-1, paths, distance+1);
+		}
+		if(puzzleArray[row][col-1] > 0)
+		{
+			//If we still have enough cells left to connect to that field, we note it down
+			if(distance <= (puzzleArray[row][col-1] - fieldSize(row, col-1))){
+				paths.push([[row, col]]);
+			}
+			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
+		}
+	}	
+	if(col < puzzleArray[row].length && puzzleArray[row][col+1] >= 0){
+		//If we're reaching the limit with next field expanded into, there's no point continuing.
+		if(puzzleArray[row][col+1] == 0 && distance < (largestField-1)){
+			pathToValidHint(row, col+1, paths, distance+1);
+		}
+		if(puzzleArray[row][col+1] > 0)
+		{
+			//If we still have enough cells left to connect to that field, we note it down
+			if(distance <= (puzzleArray[row][col+1] - fieldSize(row, col+1))){
+				paths.push([[row, col]]);
+			}
+			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
+		}
+	}
+	if(row < puzzleArray.length && puzzleArray[row+1][col] >= 0){
+		//If we're reaching the limit with next field expanded into, there's no point continuing.
+		if(puzzleArray[row+1][col] == 0 && distance < (largestField-1)){
+			pathToValidHint(row+1, col, paths, distance+1);
+		}
+		if(puzzleArray[row+1][col] > 0)
+		{
+			//If we still have enough cells left to connect to that field, we note it down
+			if(distance <= (puzzleArray[row+1][col] - fieldSize(row+1, col))){
+				paths.push([[row, col]]);
+			}
+			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
+		}
+	}	
+
+
+	//If any paths have been found, list the path taken there from the edge cell
+	for(let i = startIndex; i < paths.length; i++){
+		paths[i].push([row, col]);
+	}
 }
