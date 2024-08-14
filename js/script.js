@@ -523,11 +523,11 @@ function checkNearAdjacency(){
 	for (let row = 0; row < puzzleArray.length; row++) {
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 0){
-				if(col < puzzleArray[row].length && puzzleArray[row][col+2] > 0){ //2 spaces left
+				if(col < puzzleArray[row].length-2 && puzzleArray[row][col+2] > 0){ //2 spaces left
 					console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
 					markCell(row, col+1);		
 				}
-				if(row < puzzleArray.length && puzzleArray[row+2][col] > 0){ //2 spaces down
+				if(row < puzzleArray.length-2 && puzzleArray[row+2][col] > 0){ //2 spaces down
 					console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
 					markCell(row+1, col);
 				}
@@ -968,7 +968,7 @@ function expand(expansion, possibleStates, claimableCellClusters){
 		 */
 		if(expansion.length >= testingArray[expansion[0][0]][expansion[0][1]]){
 			//printPermutation(testingArray);
-			console.log(possibleStates);
+			//console.log(possibleStates);
 			//if(possibleStates.length > 500){console.log("500");	}
 			//if(possibleStates.length > 1000){possibleStates = []; return;}
 			possibleStates.push(JSON.parse(JSON.stringify(expansion)));
