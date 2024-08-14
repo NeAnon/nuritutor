@@ -520,14 +520,14 @@ function debugFilledCells(){
 }
 
 function checkNearAdjacency(){
-	for (let row = 0; row < puzzleArray.length-2; row++) {
-		for (let col = 0; col < puzzleArray[row].length-2; col++) {
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 0){
-				if(puzzleArray[row][col+2] > 0){ //2 spaces left
+				if(col < puzzleArray[row].length && puzzleArray[row][col+2] > 0){ //2 spaces left
 					console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
 					markCell(row, col+1);		
 				}
-				if(puzzleArray[row+2][col] > 0){ //2 spaces down
+				if(row < puzzleArray.length && puzzleArray[row+2][col] > 0){ //2 spaces down
 					console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
 					markCell(row+1, col);
 				}
