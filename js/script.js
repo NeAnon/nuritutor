@@ -355,6 +355,10 @@ function solve(){
 			checkCorners();
 		}
 
+		//Add check for common borders (cells which will be filled no matter which permutation for a filled field is the correct one)
+
+		//Add borders between incomplete fields
+
 		//Test orientations of smaller fields with only one or two spots to fill to check for contradictions - Ex. 7
 
 		//Keep fields from trapping filled cells - Ex. 8
