@@ -1569,7 +1569,7 @@ function pathToValidHint(row, col, paths, distance){
 			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
 		}
 	}	
-	if(col < puzzleArray[row].length && puzzleArray[row][col+1] >= 0){
+	if(col < puzzleArray[row].length-1 && puzzleArray[row][col+1] >= 0){
 		//If we're reaching the limit with next field expanded into, there's no point continuing.
 		if(puzzleArray[row][col+1] == 0 && distance < (largestField-1)){
 			pathToValidHint(row, col+1, paths, distance+1);
@@ -1583,7 +1583,7 @@ function pathToValidHint(row, col, paths, distance){
 			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
 		}
 	}
-	if(row < puzzleArray.length && puzzleArray[row+1][col] >= 0){
+	if(row < puzzleArray.length-1 && puzzleArray[row+1][col] >= 0){
 		//If we're reaching the limit with next field expanded into, there's no point continuing.
 		if(puzzleArray[row+1][col] == 0 && distance < (largestField-1)){
 			pathToValidHint(row+1, col, paths, distance+1);
