@@ -198,6 +198,49 @@ function setExampleBoard(exampleName){
 		createPresetBoard(board);
 	}
 	if(exampleName == "sample6"){
+		//TBD: board difficulty between sample4 and sample6
+
+		document.getElementById("rowsInput").value = 12;
+		document.getElementById("colsInput").value = 12;
+		let board = [
+						[0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 0],
+						[5, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
+						[0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3],
+						[0, 1, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0],
+					];
+		createPresetBoard(board);
+	}
+	if(exampleName == "sample7"){
+		document.getElementById("rowsInput").value = 15;
+		document.getElementById("colsInput").value = 15;
+		let board = [
+						[0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0, 0, 0],
+						[0, 0, 0, 1, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+						[0, 4, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+						[0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1],
+						[2, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 1, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+						[0, 0, 2, 0, 0, 4, 0, 0, 0, 1, 0, 0, 3, 0, 0],
+						[0, 5, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 2],
+						[0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 4, 0, 0, 0],
+						[0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 3, 0],
+						[0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1, 0, 0, 0],
+						[0, 0, 0, 3, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+						[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					];
+		createPresetBoard(board);
+	}
+	if(exampleName == "sample8"){
 		document.getElementById("rowsInput").value = 15;
 		document.getElementById("colsInput").value = 15;
 		let board = [
@@ -311,6 +354,10 @@ function solve(){
 		if(!changed){
 			checkCorners();
 		}
+
+		//Test orientations of smaller fields with only one or two spots to fill to check for contradictions - Ex. 7
+
+		//Keep fields from trapping filled cells - Ex. 8
 	}
 	console.log(puzzleArray);
 	
