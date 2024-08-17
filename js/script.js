@@ -1,5 +1,5 @@
 let selectedCell;
-let puzzleArray; let testingArray;
+let puzzleArray; let testingArray; let completedFields;
 let lowestFill; let indivCells;
 let largestField;
 let changed;
@@ -26,6 +26,7 @@ function initializePage(){
 	createGrid();
 	puzzleArray = [];
 	testingArray = [];
+	completedFields = [];
 	console.log("Testing Array:");
 	console.log(testingArray);
 
@@ -376,6 +377,7 @@ function makeArray(){
 	largestField = 0;
 
 	console.log(rows + " " + cols);
+	completedFields = [];
 	puzzleArray = [];
 	lowestFill = -1;
 	indivCells = 0;
@@ -809,6 +811,9 @@ function markCellBlank(row, col){
 
 function expandHintArea(dRow, dCol){
 
+	//No need to run all this if we're already done with the field.
+	if(JSON.stringify(completedFields).indexOf(JSON.stringify([dRow, dCol])) != -1){return;}
+
 	testingArray = [];
 	let protectedCells = [];
 	let claimableCells = [];
@@ -988,6 +993,7 @@ function expandHintArea(dRow, dCol){
 			if(commonFields[i][1] < puzzleArray[0].length-1 && puzzleArray[commonFields[i][0]][commonFields[i][1]+1] == 0){
 				markCell(commonFields[i][0],[commonFields[i][1]+1]);
 			}
+			completedFields.push([commonFields[i][0], commonFields[i][1]]);
 		}
 		return;
 	}
@@ -1663,7 +1669,8 @@ function checkCorners(){
 }
 
 function calculateBorder(permutation){
-	let border = [];
+	//Disable for now, not sure if the reward is worth the effort
+	let border = [];	return border;
 	console.log("permutation:");
 	console.log(permutation);
 	for(let i = 0; i < permutation.length; i++){
