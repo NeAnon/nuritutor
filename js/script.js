@@ -350,7 +350,7 @@ function solve(){
 			connectUnassignedFields();
 		}
 		
-		//Check corners. This is just for the sake of completeness
+		//Check corners. This is mostly just for the sake of completeness
 		if(!changed){
 			checkCorners();
 		}
@@ -944,12 +944,20 @@ function expandHintArea(dRow, dCol){
 	let possibleStates = [];
 	expand(expansion, possibleStates, claimableCellClusters);
 
+	let border = JSON.parse(JSON.stringify(calculateBorder(possibleStates[0])));
+
 	// console.log(possibleStates[0]);
 	let commonFields = JSON.parse(JSON.stringify(possibleStates[0]));
 	for(let i = 0; i < possibleStates.length; i++) {
+		let nextBorder = calculateBorder(possibleStates[i]);
 		for(let j = 0; j < commonFields.length; j++) {
 			if(JSON.stringify(possibleStates[i]).indexOf(JSON.stringify(commonFields[j])) == -1) {
 				commonFields.splice(j, 1);
+			}
+		}
+		for(let j = 0; j < border.length; j++) {
+			if(JSON.stringify(nextBorder).indexOf(JSON.stringify(border[j])) == -1) {
+				border.splice(j, 1); j--;
 			}
 		}
 	}
@@ -981,6 +989,12 @@ function expandHintArea(dRow, dCol){
 				markCell(commonFields[i][0],[commonFields[i][1]+1]);
 			}
 		}
+		return;
+	}
+
+	//Otherwise, fill all the cells they have in common
+	for(let i = 0; i < border.length; i++){
+		markCell(border[i][0], border[i][1]);
 	}
 }
 
@@ -1646,4 +1660,34 @@ function checkCorners(){
 			markCell(puzzleArray.length-1,puzzleArray[0].length-1);
 		}
 	}
+}
+
+function calculateBorder(permutation){
+	let border = [];
+	console.log("permutation:");
+	console.log(permutation);
+	for(let i = 0; i < permutation.length; i++){
+		if(	permutation[i][0] > 0 
+			&& JSON.stringify(permutation).indexOf(JSON.stringify([permutation[i][0]-1, permutation[i][1]])) == -1
+			&& puzzleArray[permutation[i][0]-1][permutation[i][1]] == 0){
+			border.push([permutation[i][0]-1, permutation[i][1]]);
+		}
+		if(	permutation[i][1] > 0 
+			&& JSON.stringify(permutation).indexOf(JSON.stringify([permutation[i][0], permutation[i][1]-1])) == -1
+			&& puzzleArray[permutation[i][0]][permutation[i][1]-1] == 0){
+			border.push([permutation[i][0], permutation[i][1]-1]);
+		}
+		if(	permutation[i][1] < puzzleArray[0].length-1 
+			&& JSON.stringify(permutation).indexOf(JSON.stringify([permutation[i][0], permutation[i][1]+1])) == -1
+			&& puzzleArray[permutation[i][0]][permutation[i][1]+1] == 0){
+			border.push([permutation[i][0], permutation[i][1]+1]);
+		}
+		if(	permutation[i][0] < puzzleArray.length-1 
+			&& JSON.stringify(permutation).indexOf(JSON.stringify([permutation[i][0]+1, permutation[i][1]])) == -1
+			&& puzzleArray[permutation[i][0]+1][permutation[i][1]] == 0){
+			border.push([permutation[i][0]+1, permutation[i][1]]);
+		}
+	}
+	console.log("border:", border);
+	return border;
 }
