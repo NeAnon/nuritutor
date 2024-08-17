@@ -1670,9 +1670,9 @@ function checkCorners(){
 
 function calculateBorder(permutation){
 	//Disable for now, not sure if the reward is worth the effort
-	let border = [];	return border;
-	console.log("permutation:");
-	console.log(permutation);
+	let border = [];	//return border;
+	//console.log("permutation:");
+	//console.log(permutation);
 	for(let i = 0; i < permutation.length; i++){
 		if(	permutation[i][0] > 0 
 			&& JSON.stringify(permutation).indexOf(JSON.stringify([permutation[i][0]-1, permutation[i][1]])) == -1
@@ -1695,6 +1695,6 @@ function calculateBorder(permutation){
 			border.push([permutation[i][0]+1, permutation[i][1]]);
 		}
 	}
-	console.log("border:", border);
+	//console.log("border:", border);
 	return border;
 }
