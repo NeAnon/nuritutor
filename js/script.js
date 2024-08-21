@@ -468,7 +468,7 @@ function markCell(row, col){
 						puzzleArray[row][col] = puzzleArray[row][col-1];
 					}
 				}
-				if(col+1 < puzzleArray.length && puzzleArray[row][col+1] < -1)
+				if(col+1 < puzzleArray[row].length && puzzleArray[row][col+1] < -1)
 				{
 					if(puzzleArray[row][col+1] > puzzleArray[row][col])
 					{
@@ -531,7 +531,7 @@ function reMark(row, col){
 			reMark(row, col-1);	
 		}
 	}
-	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] < -1){		
+	if(col+1 < puzzleArray[0].length && puzzleArray[row][col+1] < -1){		
 		if(puzzleArray[row][col+1] > puzzleArray[row][col])
 		{
 			reMark(row, col+1);	
@@ -630,10 +630,10 @@ function checkCellDistance(row, col, stepsMade = 0){
 
 	//Make an initial check whether the path would be adjacent to some cell which would block a path to a large enough field
 	//Due to the field-adjacency rule
-	if(	(row > 0 && puzzleArray[row-1][col] > 1 && puzzleArray[row-1][col] < stepsMade) || 
-		(col > 0 && puzzleArray[row][col-1] > 1 && puzzleArray[row][col-1] < stepsMade) || 
-		(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] > 1 && puzzleArray[row][col+1] < stepsMade) || 
-		(row < (puzzleArray.length-1) && puzzleArray[row+1][col] > 1 && puzzleArray[row+1][col] < stepsMade)) 		
+	if(	(row > 0 && puzzleArray[row-1][col] > 1 && puzzleArray[row-1][col] <= stepsMade+1) || 
+		(col > 0 && puzzleArray[row][col-1] > 1 && puzzleArray[row][col-1] <= stepsMade+1) || 
+		(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] > 1 && puzzleArray[row][col+1] <= stepsMade+1) || 
+		(row < (puzzleArray.length-1) && puzzleArray[row+1][col] > 1 && puzzleArray[row+1][col] <= stepsMade+1)) 		
 		{	
 			return true;
 		}
@@ -783,7 +783,7 @@ function markCellBlank(row, col){
 			puzzleArray[row][col] = puzzleArray[row][col-1];
 		}
 	}
-	if(col+1 < puzzleArray.length && puzzleArray[row][col+1] > 0){
+	if(col+1 < puzzleArray[0].length && puzzleArray[row][col+1] > 0){
 		if(puzzleArray[row][col+1] > puzzleArray[row][col])
 		{
 			puzzleArray[row][col] = puzzleArray[row][col+1];
@@ -801,7 +801,7 @@ function markCellBlank(row, col){
 		if(col > 0 && puzzleArray[row][col-1] == -1){
 			markCellBlank(row, col-1);
 		}
-		if(col+1 < puzzleArray.length && puzzleArray[row][col+1] == -1){
+		if(col+1 < puzzleArray[row].length && puzzleArray[row][col+1] == -1){
 			markCellBlank(row, col+1);
 		}
 	}
@@ -861,7 +861,7 @@ function expandHintArea(dRow, dCol){
 					{
 						protectedCells.push([protectedCells[i][0], protectedCells[i][1]-1]);
 					}
-					if(	protectedCells[i][1]+1 < puzzleArray.length && 
+					if(	protectedCells[i][1]+1 < puzzleArray[0].length && 
 						puzzleArray[protectedCells[i][0]][protectedCells[i][1]+1] == puzzleArray[protectedCells[i][0]][protectedCells[i][1]] && 
 						JSON.stringify(protectedCells).indexOf(JSON.stringify([protectedCells[i][0], protectedCells[i][1]+1])) == -1)
 					{
@@ -930,7 +930,7 @@ function expandHintArea(dRow, dCol){
 				{
 					testingArray[row][col-1] = 'X';
 				}
-				if(col+1 < puzzleArray.length && puzzleArray[row][col+1] != testingArray[row][col])
+				if(col+1 < puzzleArray[row].length && puzzleArray[row][col+1] != testingArray[row][col])
 				{
 					testingArray[row][col+1] = 'X';
 				}
@@ -957,7 +957,7 @@ function expandHintArea(dRow, dCol){
 		let nextBorder = calculateBorder(possibleStates[i]);
 		for(let j = 0; j < commonFields.length; j++) {
 			if(JSON.stringify(possibleStates[i]).indexOf(JSON.stringify(commonFields[j])) == -1) {
-				commonFields.splice(j, 1);
+				commonFields.splice(j, 1); j--;
 			}
 		}
 		for(let j = 0; j < border.length; j++) {
@@ -1181,7 +1181,7 @@ function expand(expansion, possibleStates, claimableCellClusters){
 			}
 			// console.log("Resetting cell of rank " + deletedCell);
 			for(let i = 0; i < testingArray.length; i++){
-				for(let j = 0; j < testingArray.length; j++){
+				for(let j = 0; j < testingArray[0].length; j++){
 					if(testingArray[i][j] < 0 && testingArray[i][j] > -deletedCell){
 						testingArray[i][j] = 0;
 					}
@@ -1276,7 +1276,7 @@ function checkFilledAreaEscape(row, col){
 				escapes.push([filledArea[i][0], filledArea[i][1]-1]);
 			}
 		}
-		if(	filledArea[i][1]+1 < puzzleArray.length){
+		if(	filledArea[i][1]+1 < puzzleArray[0].length){
 			if(	puzzleArray[filledArea[i][0]][filledArea[i][1]+1] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
 				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]+1])) == -1)
 			{
@@ -1289,10 +1289,10 @@ function checkFilledAreaEscape(row, col){
 			}
 		}
 	}
-	console.log("filledArea");
-	console.log(filledArea);
-	console.log("escapes");
-	console.log(escapes);
+	// console.log("filledArea");
+	// console.log(filledArea);
+	// console.log("escapes");
+	// console.log(escapes);
 	if(escapes.length == 1){
 		markCell(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
@@ -1372,7 +1372,7 @@ function checkClaimableAreaEscape(row, col){
 				escapes.push([filledArea[i][0], filledArea[i][1]-1]);
 			}
 		}
-		if(	filledArea[i][1]+1 < puzzleArray.length){
+		if(	filledArea[i][1]+1 < puzzleArray[0].length){
 			if(	puzzleArray[filledArea[i][0]][filledArea[i][1]+1] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
 				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0], filledArea[i][1]+1])) == -1)
 			{
@@ -1385,10 +1385,10 @@ function checkClaimableAreaEscape(row, col){
 			}
 		}
 	}
-	console.log("filledArea");
-	console.log(filledArea);
-	console.log("escapes");
-	console.log(escapes);
+	// console.log("filledArea");
+	// console.log(filledArea);
+	// console.log("escapes");
+	// console.log(escapes);
 	if(escapes.length == 1){
 		markCellBlank(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
@@ -1446,7 +1446,7 @@ function fieldSize(row, col){
 		{
 			fieldCells.push([fieldCells[i][0], fieldCells[i][1]-1]);
 		}
-		if(	fieldCells[i][1]+1 < puzzleArray.length && 
+		if(	fieldCells[i][1]+1 < puzzleArray[0].length && 
 			puzzleArray[fieldCells[i][0]][fieldCells[i][1]+1] == puzzleArray[fieldCells[i][0]][fieldCells[i][1]] && 
 			JSON.stringify(fieldCells).indexOf(JSON.stringify([fieldCells[i][0], fieldCells[i][1]+1])) == -1)
 		{
@@ -1698,3 +1698,5 @@ function calculateBorder(permutation){
 	//console.log("border:", border);
 	return border;
 }
+
+
