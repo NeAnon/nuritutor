@@ -363,6 +363,9 @@ function solve(){
 		//Test orientations of smaller fields with only one or two spots to fill to check for contradictions - Ex. 7
 
 		//Keep fields from trapping filled cells - Ex. 8
+		// if(!changed){
+		// 	fillAlongEdge();
+		// }
 	}
 	console.log(puzzleArray);
 	
@@ -1699,4 +1702,110 @@ function calculateBorder(permutation){
 	return border;
 }
 
+//Function to make sure that filled cells don't get "trapped" by blank cells?
+function fillAlongEdge(){
+	let testingArray = []
+	for(let i = 0; i < puzzleArray.length; i++){
+		testingArray.push([]);
+		for(let j = 0; j < puzzleArray[i].length; j++){
+			testingArray[i].push(puzzleArray[i][j]);
+		}
+		
+	}
+	console.log(testingArray);
 
+	//Any hints adjacent to the edge must be given ample space
+	//Test vertical first
+	for(let i = 0; i < testingArray.length; i++){
+		if(testingArray[i][0] > 1){
+			let upOffset = 1;
+			if(i >= upOffset && (testingArray[i-upOffset][0] == -1 || testingArray[i-upOffset][0] == 0)){
+				while(testingArray[i-(upOffset-1)][0] > 1 && i >= upOffset && (testingArray[i-upOffset][0] == -1 || testingArray[i-upOffset][0] == 0)){
+					testingArray[i-upOffset][0] = testingArray[i-(upOffset-1)][0]-1;
+					upOffset++;
+				}
+			}
+			if(i < testingArray.length-1 && (testingArray[i+1][0] == -1 || testingArray[i+1][0] == 0)){
+				testingArray[i+1][0] = testingArray[i][0]-1;
+			}
+		}
+		if(testingArray[i][testingArray[i].length-1] > 1){
+			let upOffset = 1;
+			while(	testingArray[i-(upOffset-1)][testingArray[i].length-1] > 1 && 
+					i >= upOffset && 
+					(testingArray[i-upOffset][testingArray[i].length-1] == -1 || testingArray[i-upOffset][testingArray[i].length-1] == 0)){
+				testingArray[i-upOffset][testingArray[i].length-1] = testingArray[i-(upOffset-1)][testingArray[i].length-1]-1;
+				upOffset++;
+			}
+			if(i < testingArray.length-1 && (testingArray[i+1][testingArray[i].length-1] == -1 || testingArray[i+1][testingArray[i].length-1] == 0)){
+				testingArray[i+1][testingArray[i].length-1] = testingArray[i][testingArray[i].length-1]-1;
+			}
+		}
+	}
+
+	//Test horizontal next
+	for(let i = 0; i < testingArray[0].length; i++){
+		if(testingArray[0][i] > 1){
+			let leftOffset = 1;
+			while(	testingArray[0][i-(leftOffset-1)] > 1 &&
+					i >= leftOffset &&
+					(testingArray[0][i-leftOffset] == -1 || testingArray[0][i-leftOffset] == 0))
+			{
+				testingArray[0][i-leftOffset] = testingArray[0][i-(leftOffset-1)]-1;
+				leftOffset++;
+			}
+			if(i < testingArray[0].length-1 && (testingArray[0][i+1] == -1 || testingArray[0][i+1] == 0)){
+				testingArray[0][i+1] = testingArray[0][i]-1;
+			}
+		}
+		if(testingArray[testingArray.length-1][i] > 1){
+			let leftOffset = 1;
+			while(	testingArray[testingArray.length-1][i-(leftOffset-1)] > 1 &&
+					i >= leftOffset &&
+					(testingArray[testingArray.length-1][i-leftOffset] == -1 || testingArray[testingArray.length-1][i-leftOffset] == 0))
+			{
+				testingArray[testingArray.length-1][i-leftOffset] = testingArray[testingArray.length-1][i-(leftOffset-1)]-1;
+				leftOffset++;
+			}
+			if(i < testingArray[testingArray.length-1].length-1 && (testingArray[testingArray.length-1][i+1] == -1 || testingArray[testingArray.length-1][i+1] == 0)){
+				testingArray[testingArray.length-1][i+1] = testingArray[testingArray.length-1][i]-1;
+			}
+		}
+	}
+
+	//And one more vertical pass, just in case
+	for(let i = 0; i < testingArray.length; i++){
+		if(testingArray[i][0] > 1){
+			let upOffset = 1;
+			if(i >= upOffset && (testingArray[i-upOffset][0] == -1 || testingArray[i-upOffset][0] == 0)){
+				while(testingArray[i-(upOffset-1)][0] > 1 && i >= upOffset && (testingArray[i-upOffset][0] == -1 || testingArray[i-upOffset][0] == 0)){
+					testingArray[i-upOffset][0] = testingArray[i-(upOffset-1)][0]-1;
+					upOffset++;
+				}
+			}
+			if(i < testingArray.length-1 && (testingArray[i+1][0] == -1 || testingArray[i+1][0] == 0)){
+				testingArray[i+1][0] = testingArray[i][0]-1;
+			}
+		}
+		if(testingArray[i][testingArray[i].length-1] > 1){
+			let upOffset = 1;
+			while(	testingArray[i-(upOffset-1)][testingArray[i].length-1] > 1 && 
+					i >= upOffset && 
+					(testingArray[i-upOffset][testingArray[i].length-1] == -1 || testingArray[i-upOffset][testingArray[i].length-1] == 0)){
+				testingArray[i-upOffset][testingArray[i].length-1] = testingArray[i-(upOffset-1)][testingArray[i].length-1]-1;
+				upOffset++;
+			}
+			if(i < testingArray.length-1 && (testingArray[i+1][testingArray[i].length-1] == -1 || testingArray[i+1][testingArray[i].length-1] == 0)){
+				testingArray[i+1][testingArray[i].length-1] = testingArray[i][testingArray[i].length-1]-1;
+			}
+		}
+	}
+
+	
+
+	console.log(testingArray);
+	printPermutation(testingArray);
+	
+	//Use this information to extend the walls 
+
+}
