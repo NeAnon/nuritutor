@@ -73,3 +73,37 @@ body{
 .examples{
 	color: white;
 }
+
+.marklist{
+	outline:red 1px solid;
+	width:200px;
+	/* display:block; */
+	display: flex;
+	flex-direction: column;
+}
+
+.box{
+	border: blue 1px solid;
+	min-height: 10px;
+	display: flex;
+	flex:auto;
+}
+
+.header{
+	border: yellow 1px solid;
+	max-height: 10px;
+	min-height: none;
+	flex: 1;
+}
+
+.footer{
+	border: green 1px solid;
+	max-height: 10px;
+	min-height: none;
+	flex: 1;
+}
+
+.separator{
+	width:10px;
+	height:10px;
+}
