@@ -4,6 +4,10 @@ let lowestFill; let indivCells;
 let largestField;
 let changed;
 
+let stepsTaken; 
+//Writing and reading pointers
+let stepWPointer; let stepRPointer;
+
 function initializePage(){
 	console.log("Page initialized!");    
 
@@ -32,6 +36,11 @@ function initializePage(){
 
 	lowestFill = -1;
 	indivCells = 0;
+
+	//reinitialize step-taking array
+	stepsTaken = [];
+	stepWPointer = -1;
+	stepRPointer = -1;
 
 	initializeExampleButtons();
 }
@@ -65,6 +74,11 @@ function createGrid(){
 			row.appendChild(cell);
 		}
 	}
+
+	//reinitialize step-taking array
+	stepsTaken = [];
+	stepWPointer = -1;
+	stepRPointer = -1;
 }
 
 function destroyGrid(){
@@ -303,6 +317,39 @@ function createPresetBoard(board = []){
 	}
 }
 
+function recordStep(type){
+	//If the previous step was unutilized, write over it
+	if(stepWPointer >= 0 && stepsTaken[stepWPointer][2] == undefined){
+		stepsTaken.pop();
+		stepWPointer--;
+	}
+	switch(type){
+		case 1:
+			stepsTaken.push([1, "Mark % as filled, as they're surrounding a field of size 1."]);
+			break;
+		case 2:
+			stepsTaken.push([1, "Mark % as filled to separate a pair of diagonally adjacent fields."]);
+			break;
+		case 3:
+			stepsTaken.push([1, "Mark % as filled to separate a pair of fields."]);
+			break;
+		case 4:
+			stepsTaken.push([0, "Mark % as empty to prevent a 2x2 space of filled cells from forming."]);
+			break;
+		default:
+			console.log("No valid step type detected!");
+			return;
+	}
+	stepWPointer++;
+}
+
+function recordField(row, col){
+	if(stepsTaken[stepWPointer][2] == undefined){
+		stepsTaken[stepWPointer].push([]);
+	}
+	stepsTaken[stepWPointer][2].push([row, col]);
+}
+
 function solve(){
 	console.log("Solving started.");
 	console.log(testingArray);
@@ -405,7 +452,7 @@ function runThroughOnes(){
 	for (let row = 0; row < puzzleArray.length; row++) {
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] == 1){
-				console.log("Cell at (" + row + ', ' + col + ") contains a 1, therefore it shouldn't have any blank space adjacent to it.");
+				recordStep(1);
 				markCell(row-1, col);
 				markCell(row, col-1);
 				markCell(row, col+1);
@@ -421,21 +468,25 @@ function checkDiagonals(){
 			if(puzzleArray[row][col] > 0){
 				if(row > 0 && col > 0 && puzzleArray[row-1][col-1] > 0){ //Top-left
 					console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row-1, col);		
 					markCell(row, col-1);
 				}
 				if(row > 0 && col < puzzleArray[row].length-1 && puzzleArray[row-1][col+1] > 0){ //Top-right
 					console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row-1, col);
 					markCell(row, col+1);
 				}
 				if(row < puzzleArray.length-1 && col > 0 && puzzleArray[row+1][col-1] > 0){ //Bottom-left
 					console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row+1, col);
 					markCell(row, col-1);
 				}
 				if(row < puzzleArray.length-1 && col < puzzleArray[row].length-1 && puzzleArray[row+1][col+1] > 0){ //Bottom-right
 					console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row+1, col);
 					markCell(row, col+1);
 				}
@@ -448,6 +499,7 @@ function markCell(row, col){
 	if(row >= 0 && row < puzzleArray.length){
 		if(col >= 0 && col < puzzleArray[row].length){
 			if(puzzleArray[row][col] <= -2){return;}
+			recordField(row, col);
 			lowestFill--; indivCells++;
 			puzzleArray[row][col] = lowestFill;
 			if(puzzleArray[row][col] < -1){
@@ -481,10 +533,10 @@ function markCell(row, col){
 				if(puzzleArray[row][col] != lowestFill){
 					lowestFill++; indivCells--;
 				}
-				if(!document.getElementById(row + ', ' + col).classList.contains('filled')){
-					document.getElementById(row + ', ' + col).classList.add('filled');
-					//console.log("cell " + row + ", " + col + " filled");
-				}
+				// if(!document.getElementById(row + ', ' + col).classList.contains('filled')){
+				// 	document.getElementById(row + ', ' + col).classList.add('filled');
+				// 	//console.log("cell " + row + ", " + col + " filled");
+				// }
 				reMark(row, col);
 			}
 		}
@@ -581,10 +633,12 @@ function checkNearAdjacency(){
 			if(puzzleArray[row][col] > 0){
 				if(col < puzzleArray[row].length-2 && puzzleArray[row][col+2] > 0){ //2 spaces left
 					console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					recordStep(3);
 					markCell(row, col+1);		
 				}
 				if(row < puzzleArray.length-2 && puzzleArray[row+2][col] > 0){ //2 spaces down
 					console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					recordStep(3);
 					markCell(row+1, col);
 				}
 			}
@@ -717,6 +771,7 @@ function searchForFilled2x2s(){
 				
 				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row-1][col-1] == 0){
+						recordStep(4);
 						markCellBlank(row-1, col-1);
 						console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
@@ -725,6 +780,7 @@ function searchForFilled2x2s(){
 
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row-1][col+1] == 0){
+						recordStep(4);
 						markCellBlank(row-1, col+1);
 						console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
@@ -737,6 +793,7 @@ function searchForFilled2x2s(){
 				
 				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row+1][col-1] == 0){						
+						recordStep(4);
 						markCellBlank(row+1, col-1);
 						console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
@@ -745,6 +802,7 @@ function searchForFilled2x2s(){
 
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row+1][col+1] == 0){
+						recordStep(4);
 						markCellBlank(row+1, col+1);
 						console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
@@ -765,6 +823,7 @@ function markCellBlank(row, col){
 	if(puzzleArray[row][col] > 0){
 		return;
 	}
+	recordField(row, col);
 	puzzleArray[row][col] = -1;
 	document.getElementById(row + ', ' + col).innerHTML = '.';
 	//Check cells around the marked one for other marked cells
