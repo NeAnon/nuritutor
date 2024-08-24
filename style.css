@@ -90,17 +90,20 @@ body{
 }
 
 .header{
+	color:white;
+	text-align: center;
 	border: yellow 1px solid;
-	max-height: 10px;
+	/* max-height: 10px; */
 	min-height: none;
-	flex: 1;
+	height:fit-content;
+	flex: initial;
 }
 
 .footer{
 	border: green 1px solid;
-	max-height: 10px;
+	/* max-height: 10px; */
 	min-height: none;
-	flex: 1;
+	flex: initial;
 }
 
 .separator{
