@@ -2,7 +2,7 @@ let selectedCell;
 let puzzleArray; let testingArray; let completedFields;
 let lowestFill; let indivCells;
 let largestField;
-let changed;
+let changed; let solved;
 
 let stepsTaken; 
 //Writing and reading pointers
@@ -80,6 +80,7 @@ function createGrid(){
 			row.appendChild(cell);
 		}
 	}
+	solved = false;
 
 	//reinitialize step-taking array
 	stepsTaken = [];
@@ -343,7 +344,19 @@ function recordStep(type){
 			stepsTaken.push([1, "Mark % as filled to separate a pair of fields."]);
 			break;
 		case 4:
-			stepsTaken.push([0, "Mark % as empty to prevent a 2x2 space of filled cells from forming."]);
+			stepsTaken.push([0, "Mark % as blank to prevent a 2x2 space of filled cells from forming."]);
+			break;
+		case 5:
+			stepsTaken.push([1, "Mark % as filled as it's out of reach of any field."]);
+			break;
+		case 6:
+			stepsTaken.push([0, "Mark % as blank, as they must be in order to expand the field."]);
+			break;			
+		case 7:
+			stepsTaken.push([1, "This field is completed, so we can mark % to isolate it."]);
+			break;
+		case 8:
+			stepsTaken.push([1, "Mark % as filled, as any attempt to expand this field will require a border here."]);
 			break;
 		default:
 			console.log("No valid step type detected!");
@@ -364,12 +377,12 @@ function playbackStep(step){
 		let stepList = document.getElementById("stepList");
 		if(step > stepList.childNodes.length-1){
 			let nextStep = document.createElement("div");
-			nextStep.innerHTML = stringifyStep(step);
+			nextStep.innerHTML = "<b> Step " + step + ":</b><br>" + stringifyStep(step) + "<br><br>";
 			stepList.appendChild(nextStep);
-
+			stepList.scrollTop = stepList.scrollHeight;
+			displayStep(step);
 			stepRPointer++;
 		}
-		
 	}
 }
 
@@ -387,7 +400,34 @@ function stringifyStep(step){
 }
 
 function readNextStep(){
+	if(!solved){
+		solve();
+	}
 	playbackStep(stepRPointer + 1);
+}
+
+function displayStep(step){
+	switch(stepsTaken[step][0]){
+		case 0:
+			//Emptying cells
+			stepsTaken[step][2].forEach(cell => {
+				if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('emptied')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.add('emptied');
+				}
+				document.getElementById(cell[0] + ', ' + cell[1]).innerHTML = '.';
+			});
+			break;	
+		case 1:
+			//Filling cells
+			stepsTaken[step][2].forEach(cell => {
+				if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('filled')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.add('filled');
+				}
+			});
+			break;
+		default: 
+			return;
+	}
 }
 
 function solve(){
@@ -413,14 +453,14 @@ function solve(){
 		//Make sure we aren't creating any 2x2 filled spaces (simple check so it's good to run first and often)
 		searchForFilled2x2s();
 		
-		if(!changed){
-			//Find cells that cannot be marked blank, mark them as filled instead
-			searchStarvedCells();
-		}
-
 		//For all hints, check if the hint can fill its own space
 		if(!changed){
 			expandHintAreas();	
+		}
+		
+		if(!changed){
+			//Find cells that cannot be marked blank, mark them as filled instead
+			searchStarvedCells();
 		}
 		
 		//Make sure all filled areas can escape enclosed spaces
@@ -456,7 +496,7 @@ function solve(){
 	}
 	console.log(puzzleArray);
 	
-
+	solved = true;
 }
 
 function makeArray(){
@@ -703,6 +743,7 @@ function searchStarvedCells(){
 
 			if(checkCellDistance(row, col)){
 				//If there are any starved cells, mark them
+				recordStep(5);
 				markCell(row, col);
 				console.log("Cell at (" + row + ", " + col + ") is starved.");
 			}
@@ -857,15 +898,15 @@ function searchForFilled2x2s(){
 }
 
 function markCellBlank(row, col){
-	if(!document.getElementById(row + ', ' + col).classList.contains('emptied')){
-		document.getElementById(row + ', ' + col).classList.add('emptied');
-	}
+	// if(!document.getElementById(row + ', ' + col).classList.contains('emptied')){
+	// 	document.getElementById(row + ', ' + col).classList.add('emptied');
+	// }
 	if(puzzleArray[row][col] > 0){
 		return;
 	}
 	recordField(row, col);
 	puzzleArray[row][col] = -1;
-	document.getElementById(row + ', ' + col).innerHTML = '.';
+	// document.getElementById(row + ', ' + col).innerHTML = '.';
 	//Check cells around the marked one for other marked cells
 	if(row > 0 && puzzleArray[row-1][col] > 0){
 		if(puzzleArray[row-1][col] > puzzleArray[row][col])
@@ -1071,6 +1112,7 @@ function expandHintArea(dRow, dCol){
 
 	// console.log("Fields left");
 	// console.log(commonFields);
+	recordStep(6);
 	for(let i = 0; i < commonFields.length; i++){
 		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
 		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
@@ -1082,6 +1124,7 @@ function expandHintArea(dRow, dCol){
 
 	//If a field has been expanded completely, fill the empty cells around it
 	if(commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
+		recordStep(7);
 		for(let i = 0; i < commonFields.length; i++){
 			if(commonFields[i][0] > 0 && puzzleArray[commonFields[i][0]-1][commonFields[i][1]] == 0){
 				markCell(commonFields[i][0]-1,[commonFields[i][1]]);
@@ -1101,6 +1144,7 @@ function expandHintArea(dRow, dCol){
 	}
 
 	//Otherwise, fill all the cells they have in common
+	recordStep(8);
 	for(let i = 0; i < border.length; i++){
 		markCell(border[i][0], border[i][1]);
 	}
