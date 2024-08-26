@@ -43,6 +43,12 @@ function initializePage(){
 	stepRPointer = -1;
 
 	initializeExampleButtons();
+	
+	//Initialize step controls
+	document.getElementById("nextStep").addEventListener("click", readNextStep);
+	while(document.getElementById("stepList").childElementCount){
+		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+	}
 }
 
 function createGrid(){
@@ -79,6 +85,9 @@ function createGrid(){
 	stepsTaken = [];
 	stepWPointer = -1;
 	stepRPointer = -1;
+
+	//reinitialize step-menu height
+	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
 }
 
 function destroyGrid(){
@@ -348,6 +357,37 @@ function recordField(row, col){
 		stepsTaken[stepWPointer].push([]);
 	}
 	stepsTaken[stepWPointer][2].push([row, col]);
+}
+
+function playbackStep(step){
+	if(step > stepRPointer){
+		let stepList = document.getElementById("stepList");
+		if(step > stepList.childNodes.length-1){
+			let nextStep = document.createElement("div");
+			nextStep.innerHTML = stringifyStep(step);
+			stepList.appendChild(nextStep);
+
+			stepRPointer++;
+		}
+		
+	}
+}
+
+function stringifyStep(step){
+	if(step < 0 || step >= stepsTaken.length){return "Step " + step + " out of bounds";}
+	let message = stepsTaken[step][1];
+	if(stepsTaken[step][2].length == 1){return message.replace("%",  "cell (" + stepsTaken[step][2][0][0] + ", " +  stepsTaken[step][2][0][1] + ") ");}
+	let cells = "cells ";
+	for(let i = 0; i < stepsTaken[step][2].length-2; i++){
+		cells += "(" + stepsTaken[step][2][i][0] + ", " + stepsTaken[step][2][i][1]	+ "), ";
+	}
+	cells += 	"(" + stepsTaken[step][2][stepsTaken[step][2].length-2][0] + ", " +  stepsTaken[step][2][stepsTaken[step][2].length-2][1] + ")" +
+				" and (" + stepsTaken[step][2][stepsTaken[step][2].length-1][0] + ", " +  stepsTaken[step][2][stepsTaken[step][2].length-1][1] + ")";
+	return message.replace("%", cells);
+}
+
+function readNextStep(){
+	playbackStep(stepRPointer + 1);
 }
 
 function solve(){

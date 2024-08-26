@@ -76,17 +76,22 @@ body{
 
 .marklist{
 	outline:red 1px solid;
-	width:200px;
+	width:300px;
 	/* display:block; */
 	display: flex;
 	flex-direction: column;
 }
 
-.box{
+.steplist{
 	border: blue 1px solid;
 	min-height: 10px;
-	display: flex;
+	display: block;
+	overflow: auto;
 	flex:auto;
+}
+
+.steplist div{
+	color:white;
 }
 
 .header{
