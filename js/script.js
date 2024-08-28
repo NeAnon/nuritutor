@@ -350,13 +350,22 @@ function recordStep(type){
 			stepsTaken.push([1, "Mark % as filled as it's out of reach of any field."]);
 			break;
 		case 6:
-			stepsTaken.push([0, "Mark % as blank, as they must be in order to expand the field."]);
+			stepsTaken.push([0, "Mark % as blank, as it's necessary in order to expand the field."]);
 			break;			
 		case 7:
 			stepsTaken.push([1, "This field is completed, so we can mark % to isolate it."]);
 			break;
 		case 8:
 			stepsTaken.push([1, "Mark % as filled, as any attempt to expand this field will require a border here."]);
+			break;
+		case 9:
+			stepsTaken.push([1, "Mark % as filled, to avoid trapping a section of the wall."]);
+			break;
+		case 10:
+			stepsTaken.push([0, "Mark % as blank, to avoid trapping an unclaimed field."])
+			break;
+		case 11:
+			stepsTaken.push([0, "Mark % as blank, as that's the only way to connect the unclaimed field to one with a hint."]);
 			break;
 		default:
 			console.log("No valid step type detected!");
@@ -1440,6 +1449,7 @@ function checkFilledAreaEscape(row, col){
 	// console.log("escapes");
 	// console.log(escapes);
 	if(escapes.length == 1){
+		recordStep(9);
 		markCell(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
 		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
@@ -1536,6 +1546,7 @@ function checkClaimableAreaEscape(row, col){
 	// console.log("escapes");
 	// console.log(escapes);
 	if(escapes.length == 1){
+		recordStep(10);
 		markCellBlank(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
 		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
@@ -1701,6 +1712,7 @@ function findUFieldConnection(claimableCellCluster){
 	// console.log("Fields left");
 	// console.log(commonFields);
 	for(let i = 0; i < commonFields.length; i++){
+		recordStep(11);
 		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
 		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
 			markCellBlank(commonFields[i][0], commonFields[i][1]);		
