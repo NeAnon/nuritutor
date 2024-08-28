@@ -3,6 +3,7 @@ let puzzleArray; let testingArray; let completedFields;
 let lowestFill; let indivCells;
 let largestField;
 let changed; let solved;
+let set = true;
 
 let stepsTaken; 
 //Writing and reading pointers
@@ -22,9 +23,27 @@ function initializePage(){
 		if(!selectedCell){return;}
 		if(event.key >= '0' && event.key <= '9'){
 			document.getElementById(selectedCell).innerHTML += event.key;
+			if(set){
+				while(document.getElementById("stepList").childElementCount){
+					document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+				}
+				clearBoard();
+				set = false;
+			}
+			if(!document.getElementById(selectedCell).classList.contains("emptied")){
+				document.getElementById(selectedCell).classList.add("emptied");
+			}
 		}
 		if(event.key == "Backspace"){
 			document.getElementById(selectedCell).innerHTML = "";
+			if(set){
+				while(document.getElementById("stepList").childElementCount){
+					document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+				}
+				clearBoard();
+				set = false;
+			}
+			document.getElementById(selectedCell).classList.remove("emptied");
 		}
 	});
 	createGrid();
@@ -36,6 +55,7 @@ function initializePage(){
 
 	lowestFill = -1;
 	indivCells = 0;
+	hintSum = 0;
 
 	//reinitialize step-taking array
 	stepsTaken = [];
@@ -48,6 +68,23 @@ function initializePage(){
 	document.getElementById("nextStep").addEventListener("click", readNextStep);
 	while(document.getElementById("stepList").childElementCount){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+	}
+}
+
+function clearBoard(){
+	let rows = document.getElementById("rowsInput").value;
+	let cols = document.getElementById("colsInput").value;
+
+	for(let i = 0; i < rows; i++){
+		for(let j = 0; j < cols; j++){
+			if(document.getElementById(i+', '+j).innerHTML == '.'){
+				document.getElementById(i+', '+j).innerHTML = "";
+				document.getElementById(i+', '+j).classList.remove("emptied");
+			}
+			if(document.getElementById(i+', '+j).classList.contains("filled")){
+				document.getElementById(i+', '+j).classList.remove("filled");
+			}
+		}
 	}
 }
 
@@ -89,6 +126,11 @@ function createGrid(){
 
 	//reinitialize step-menu height
 	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
+
+	//reset step-menu entries
+	while(document.getElementById("stepList").childElementCount){
+		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+	}
 }
 
 function destroyGrid(){
@@ -323,6 +365,9 @@ function createPresetBoard(board = []){
 				continue;
 			}
 			document.getElementById(row+', '+col).innerHTML = board[row][col];
+			if(!document.getElementById(row+', '+col).classList.contains("emptied")){
+				document.getElementById(row+', '+col).classList.add("emptied");
+			}
 		}
 	}
 }
@@ -334,6 +379,9 @@ function recordStep(type){
 		stepWPointer--;
 	}
 	switch(type){
+		case 0:
+			stepsTaken.push([-1, "The board is now solved."]);
+			break;
 		case 1:
 			stepsTaken.push([1, "Mark % as filled, as they're surrounding a field of size 1."]);
 			break;
@@ -505,6 +553,13 @@ function solve(){
 	}
 	console.log(puzzleArray);
 	
+	if(checkCompletion()){
+		recordStep(0);
+	} else {
+		alert(	"The program was unable to solve this board. This may either be due to this program being incomplete, or the board being unsolveable.\n" +
+				"Please check the board or select another one, and try again.");
+	}
+
 	solved = true;
 }
 
@@ -534,6 +589,14 @@ function makeArray(){
 				if(puzzleArray[i][j] > largestField){  largestField = puzzleArray[i][j];	}
 			}
 		}
+	}
+	set = true;
+
+	stepsTaken = [];
+	stepWPointer = -1;
+	stepRPointer = -1;
+	while(document.getElementById("stepList").childElementCount){
+		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
 }
 
@@ -913,7 +976,9 @@ function markCellBlank(row, col){
 	if(puzzleArray[row][col] > 0){
 		return;
 	}
-	recordField(row, col);
+	if(puzzleArray[row][col] == 0){
+		recordField(row, col);
+	}
 	puzzleArray[row][col] = -1;
 	// document.getElementById(row + ', ' + col).innerHTML = '.';
 	//Check cells around the marked one for other marked cells
@@ -1125,7 +1190,6 @@ function expandHintArea(dRow, dCol){
 	for(let i = 0; i < commonFields.length; i++){
 		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
 		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
-			puzzleArray[commonFields[i][0]][commonFields[i][1]] = -1;
 			markCellBlank(commonFields[i][0], commonFields[i][1]);		
 		}
 		//This may require an external relation for tougher boards?
@@ -1855,6 +1919,32 @@ function calculateBorder(permutation){
 	}
 	//console.log("border:", border);
 	return border;
+}
+
+function checkCompletion(){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			//More than 1 wall?
+			if(puzzleArray[row][col] < -2){
+				return false;
+			}
+			//Any empty or unclaimed blanks?
+			if(puzzleArray[row][col] == -1 || puzzleArray[row][col] == 0){
+				return false;
+			}
+			//All field sizes correct?
+			if(puzzleArray[row][col] > 0 && puzzleArray[row][col] != fieldSize(row, col)){
+				return false;
+			}
+			if(	row > 0 && col > 0 &&
+				puzzleArray[row][col] == -2 && puzzleArray[row-1][col] == -2 &&
+				puzzleArray[row][col-1] == -2 && puzzleArray[row-1][col-1] == -2)
+			{
+				return false
+			}
+		}
+	}
+	return true;
 }
 
 //Function to make sure that filled cells don't get "trapped" by blank cells?
