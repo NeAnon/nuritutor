@@ -444,7 +444,7 @@ function playbackStep(step){
 		if(step > stepList.childNodes.length-1){
 			let nextStep = document.createElement("div");
 			if(stepsTaken[step][0] > -1){
-				nextStep.innerHTML = "<b> Step " + step + ":</b><br>" + stringifyStep(step) + "<br><br>";
+				nextStep.innerHTML = "<b> Step " + (step+1) + ":</b><br>" + stringifyStep(step) + "<br><br>";
 			} else {
 				nextStep.innerHTML = stepsTaken[step][1];
 			}
@@ -456,6 +456,7 @@ function playbackStep(step){
 				lastStep = lastStep.previousSibling;
 			}
 			lastStep.classList.remove("disabled");
+			lastStep.scrollIntoView();
 		}
 		displayStep(step);
 		stepRPointer++;
@@ -468,6 +469,7 @@ function playbackStep(step){
 			lastStep = lastStep.previousSibling;
 		}
 		lastStep.classList.add("disabled");
+		lastStep.previousSibling.scrollIntoView();
 		displayStep(step);
 		stepRPointer--;
 	}
