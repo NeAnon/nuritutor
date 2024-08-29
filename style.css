@@ -115,3 +115,16 @@ body{
 	width:10px;
 	height:10px;
 }
+
+.steplist div.disabled {
+	font-style: italic;
+	color: gray;
+}
+
+.filled.new {
+	background-color: rgb(0, 255, 0);
+}
+
+.emptied.new {
+	color:rgb(0, 255, 0);
+}

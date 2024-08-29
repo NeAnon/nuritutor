@@ -66,6 +66,7 @@ function initializePage(){
 	
 	//Initialize step controls
 	document.getElementById("nextStep").addEventListener("click", readNextStep);
+	document.getElementById("prevStep").addEventListener("click", readPrevStep);
 	while(document.getElementById("stepList").childElementCount){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
@@ -129,7 +130,7 @@ function createGrid(){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
 	
-	//reinitialize step-menu height
+	//reinitialize step-menu height	
 	document.getElementById("stepList").style.setProperty("max-height", "none");
 	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
 }
@@ -449,9 +450,26 @@ function playbackStep(step){
 			}
 			stepList.appendChild(nextStep);
 			stepList.scrollTop = stepList.scrollHeight;
-			displayStep(step);
-			stepRPointer++;
+		} else {	//If it's not last, we need to start re-enabling steps
+			let lastStep = stepList.lastChild;
+			while(lastStep.previousSibling != null && lastStep.previousSibling.classList.contains("disabled")){
+				lastStep = lastStep.previousSibling;
+			}
+			lastStep.classList.remove("disabled");
 		}
+		displayStep(step);
+		stepRPointer++;
+	}
+	if(step < stepRPointer){
+		let stepList = document.getElementById("stepList");
+		let lastStep = stepList.lastChild;
+		while(lastStep.classList.contains("disabled")){
+			if(lastStep.previousSibling == null){return;}
+			lastStep = lastStep.previousSibling;
+		}
+		lastStep.classList.add("disabled");
+		displayStep(step);
+		stepRPointer--;
 	}
 }
 
@@ -468,14 +486,36 @@ function stringifyStep(step){
 	return message.replace("%", cells);
 }
 
+function readPrevStep(){
+	if(stepRPointer > 0){
+		playbackStep(stepRPointer-1);
+	}
+}
+
 function readNextStep(){
 	if(!solved){
 		solve();
 	}
-	playbackStep(stepRPointer + 1);
+	if(stepRPointer < stepsTaken.length){
+		playbackStep(stepRPointer + 1);
+	}
 }
 
 function displayStep(step){
+	if(step > 0){
+		stepsTaken[step-1][2].forEach(cell => {
+			if(document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('new')){
+				document.getElementById(cell[0] + ', ' + cell[1]).classList.remove('new');
+			}
+		});
+	}
+	//If at the last step, stop.
+	if(step >= stepsTaken.length-1){return;}
+	stepsTaken[step][2].forEach(cell => {
+		if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('new')){
+			document.getElementById(cell[0] + ', ' + cell[1]).classList.add('new');
+		}
+	});
 	switch(stepsTaken[step][0]){
 		case 0:
 			//Emptying cells
@@ -491,6 +531,27 @@ function displayStep(step){
 			stepsTaken[step][2].forEach(cell => {
 				if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('filled')){
 					document.getElementById(cell[0] + ', ' + cell[1]).classList.add('filled');
+				}
+			});
+			break;
+		default: 
+			return;
+	}
+	switch(stepsTaken[step+1][0]){
+		case 0:
+			//Emptying cells
+			stepsTaken[step+1][2].forEach(cell => {
+				if(document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('emptied')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.remove('emptied');
+				}
+				document.getElementById(cell[0] + ', ' + cell[1]).innerHTML = '';
+			});
+			break;	
+		case 1:
+			//Filling cells
+			stepsTaken[step+1][2].forEach(cell => {
+				if(document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('filled')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.remove('filled');
 				}
 			});
 			break;
