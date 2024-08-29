@@ -123,14 +123,15 @@ function createGrid(){
 	stepsTaken = [];
 	stepWPointer = -1;
 	stepRPointer = -1;
-
-	//reinitialize step-menu height
-	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
-
+	
 	//reset step-menu entries
 	while(document.getElementById("stepList").childElementCount){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
+	
+	//reinitialize step-menu height
+	document.getElementById("stepList").style.setProperty("max-height", "none");
+	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
 }
 
 function destroyGrid(){
@@ -415,6 +416,12 @@ function recordStep(type){
 		case 11:
 			stepsTaken.push([0, "Mark % as blank, as that's the only way to connect the unclaimed field to one with a hint."]);
 			break;
+		case 12:
+			stepsTaken.push([0, "Mark % as blank to avoid trapping an isolated filled cell in the corner."]);
+			break;
+		case 13:
+			stepsTaken.push([1, "Mark % as filled to avoid trapping an unclaimed blank cell in the corner."]);
+			break;
 		default:
 			console.log("No valid step type detected!");
 			return;
@@ -430,11 +437,16 @@ function recordField(row, col){
 }
 
 function playbackStep(step){
+	if(step >= stepsTaken.length){return;}
 	if(step > stepRPointer){
 		let stepList = document.getElementById("stepList");
 		if(step > stepList.childNodes.length-1){
 			let nextStep = document.createElement("div");
-			nextStep.innerHTML = "<b> Step " + step + ":</b><br>" + stringifyStep(step) + "<br><br>";
+			if(stepsTaken[step][0] > -1){
+				nextStep.innerHTML = "<b> Step " + step + ":</b><br>" + stringifyStep(step) + "<br><br>";
+			} else {
+				nextStep.innerHTML = stepsTaken[step][1];
+			}
 			stepList.appendChild(nextStep);
 			stepList.scrollTop = stepList.scrollHeight;
 			displayStep(step);
@@ -1854,18 +1866,22 @@ function pathToValidHint(row, col, paths, distance){
 function checkCorners(){
 	if(puzzleArray[0][0] == 0){
 		if(	(puzzleArray[0][1] == -1 || puzzleArray[0][1] > 0) && (puzzleArray[1][0] == -1 || puzzleArray[1][0] > 0)){
+			recordStep(12);
 			markCellBlank(0, 0);
 		}
 		if(	puzzleArray[0][1] <= -2 && puzzleArray[1][0] <= -2){
+			recordStep(13);
 			markCell(0,0);
 		}
 	}
 	if(puzzleArray[0][puzzleArray[0].length-1] == 0){
 		if(	(puzzleArray[0][puzzleArray[0].length-2] == -1 || puzzleArray[0][puzzleArray[0].length-2] > 0) && 
 			(puzzleArray[1][puzzleArray[0].length-1] == -1 || puzzleArray[1][puzzleArray[0].length-1] > 0)){
+			recordStep(12);
 			markCellBlank(0, puzzleArray[0].length-1);
 		}
 		if(	puzzleArray[0][puzzleArray[0].length-2] <= -2 && puzzleArray[1][puzzleArray[0].length-1] <= -2){
+			recordStep(13);
 			markCell(0,puzzleArray[0].length-1);
 		}
 	}
@@ -1873,18 +1889,22 @@ function checkCorners(){
 	if(puzzleArray[puzzleArray.length-1][0] == 0){
 		if(	(puzzleArray[puzzleArray.length-1][1] == -1 || puzzleArray[puzzleArray.length-1][1] > 0) && 
 			(puzzleArray[puzzleArray.length-2][0] == -1 || puzzleArray[puzzleArray.length-2][0] > 0)){
+			recordStep(12);
 			markCellBlank(puzzleArray.length-1, 0);
 		}
 		if(	puzzleArray[puzzleArray.length-1][1] <= -2 && puzzleArray[puzzleArray.length-2][0] <= -2){
+			recordStep(13);
 			markCell(puzzleArray.length-1,0);
 		}
 	}
 	if(puzzleArray[puzzleArray.length-1][puzzleArray[0].length-1] == 0){
 		if(	(puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] == -1 || puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] > 0) && 
 			(puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] == -1 || puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] > 0)){
+			recordStep(12);
 			markCellBlank(puzzleArray.length-1, puzzleArray[0].length-1);
 		}
 		if(	puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] <= -2 && puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] <= -2){
+			recordStep(13);
 			markCell(puzzleArray.length-1,puzzleArray[0].length-1);
 		}
 	}
