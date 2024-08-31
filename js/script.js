@@ -2,14 +2,21 @@ let selectedCell;
 let puzzleArray; let testingArray; let completedFields;
 let lowestFill; let indivCells;
 let largestField;
-let changed;
+let changed; let solved;
+let set = true;
+
+let stepsTaken; 
+//Writing and reading pointers
+let stepWPointer; let stepRPointer;
 
 function initializePage(){
 	console.log("Page initialized!");    
 
-	document.getElementById("solver").onclick = solve;
+	document.getElementById("solver").onclick = fullSolve;
 	document.getElementById("resizer").onclick = createGrid;
-	document.getElementById("debug").onclick = debugFilledCells;
+	if(document.getElementById("debug")){
+		document.getElementById("debug").onclick = debugFilledCells;
+	}
 
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
@@ -18,9 +25,27 @@ function initializePage(){
 		if(!selectedCell){return;}
 		if(event.key >= '0' && event.key <= '9'){
 			document.getElementById(selectedCell).innerHTML += event.key;
+			if(set){
+				while(document.getElementById("stepList").childElementCount){
+					document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+				}
+				clearBoard();
+				set = false;
+			}
+			if(!document.getElementById(selectedCell).classList.contains("emptied")){
+				document.getElementById(selectedCell).classList.add("emptied");
+			}
 		}
 		if(event.key == "Backspace"){
 			document.getElementById(selectedCell).innerHTML = "";
+			if(set){
+				while(document.getElementById("stepList").childElementCount){
+					document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+				}
+				clearBoard();
+				set = false;
+			}
+			document.getElementById(selectedCell).classList.remove("emptied");
 		}
 	});
 	createGrid();
@@ -32,8 +57,40 @@ function initializePage(){
 
 	lowestFill = -1;
 	indivCells = 0;
+	hintSum = 0;
+
+	//reinitialize step-taking array
+	stepsTaken = [];
+	stepWPointer = -1;
+	stepRPointer = -1;
 
 	initializeExampleButtons();
+	
+	//Initialize step controls
+	document.getElementById("nextStep").addEventListener("click", readNextStep);
+	document.getElementById("prevStep").addEventListener("click", readPrevStep);
+	while(document.getElementById("stepList").childElementCount){
+		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+	}
+
+	document.getElementById("explanationText").style.color = "white";
+}
+
+function clearBoard(){
+	let rows = document.getElementById("rowsInput").value;
+	let cols = document.getElementById("colsInput").value;
+
+	for(let i = 0; i < rows; i++){
+		for(let j = 0; j < cols; j++){
+			if(document.getElementById(i+', '+j).innerHTML == '.'){
+				document.getElementById(i+', '+j).innerHTML = "";
+				document.getElementById(i+', '+j).classList.remove("emptied");
+			}
+			if(document.getElementById(i+', '+j).classList.contains("filled")){
+				document.getElementById(i+', '+j).classList.remove("filled");
+			}
+		}
+	}
 }
 
 function createGrid(){
@@ -59,12 +116,27 @@ function createGrid(){
 					selectedCell = null;
 				}
 				selectedCell = cell.id;
-				console.log(selectedCell);
+				// console.log(selectedCell);
 				cell.classList.add("selected");
 			});
 			row.appendChild(cell);
 		}
 	}
+	solved = false;
+
+	//reinitialize step-taking array
+	stepsTaken = [];
+	stepWPointer = -1;
+	stepRPointer = -1;
+	
+	//reset step-menu entries
+	while(document.getElementById("stepList").childElementCount){
+		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+	}
+	
+	//reinitialize step-menu height	
+	document.getElementById("stepList").style.setProperty("max-height", "none");
+	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
 }
 
 function destroyGrid(){
@@ -86,7 +158,7 @@ function initializeExampleButtons(){
 		if(child.nodeName == "BUTTON"){
 			child.addEventListener("click", ()=>{
 				setExampleBoard(child.id);
-				console.log(testingArray);
+				// console.log(testingArray);
 
 			});
 		}
@@ -94,7 +166,7 @@ function initializeExampleButtons(){
 }
 
 function setExampleBoard(exampleName){
-	console.log(exampleName);
+	// console.log(exampleName);
 	if(exampleName == "sample1"){
 		
 
@@ -299,23 +371,224 @@ function createPresetBoard(board = []){
 				continue;
 			}
 			document.getElementById(row+', '+col).innerHTML = board[row][col];
+			if(!document.getElementById(row+', '+col).classList.contains("emptied")){
+				document.getElementById(row+', '+col).classList.add("emptied");
+			}
 		}
 	}
 }
 
+function recordStep(type){
+	//If the previous step was unutilized, write over it
+	if(stepWPointer >= 0 && stepsTaken[stepWPointer][2] == undefined){
+		stepsTaken.pop();
+		stepWPointer--;
+	}
+	switch(type){
+		case 0:
+			stepsTaken.push([-1, "The board is now solved."]);
+			break;
+		case 1:
+			stepsTaken.push([1, "Mark % as filled, as they're surrounding a field of size 1."]);
+			break;
+		case 2:
+			stepsTaken.push([1, "Mark % as filled to separate a pair of diagonally adjacent fields."]);
+			break;
+		case 3:
+			stepsTaken.push([1, "Mark % as filled to separate a pair of fields."]);
+			break;
+		case 4:
+			stepsTaken.push([0, "Mark % as blank to prevent a 2x2 space of filled cells from forming."]);
+			break;
+		case 5:
+			stepsTaken.push([1, "Mark % as filled as it's out of reach of any field."]);
+			break;
+		case 6:
+			stepsTaken.push([0, "Mark % as blank, as it's necessary in order to expand the field."]);
+			break;			
+		case 7:
+			stepsTaken.push([1, "This field is completed, so we can mark % to isolate it."]);
+			break;
+		case 8:
+			stepsTaken.push([1, "Mark % as filled, as any attempt to expand this field will require a border here."]);
+			break;
+		case 9:
+			stepsTaken.push([1, "Mark % as filled, to avoid trapping a section of the wall."]);
+			break;
+		case 10:
+			stepsTaken.push([0, "Mark % as blank, to avoid trapping an unclaimed field."])
+			break;
+		case 11:
+			stepsTaken.push([0, "Mark % as blank, as that's the only way to connect the unclaimed field to one with a hint."]);
+			break;
+		case 12:
+			stepsTaken.push([0, "Mark % as blank to avoid trapping an isolated filled cell in the corner."]);
+			break;
+		case 13:
+			stepsTaken.push([1, "Mark % as filled to avoid trapping an unclaimed blank cell in the corner."]);
+			break;
+		default:
+			console.log("No valid step type detected!");
+			return;
+	}
+	stepWPointer++;
+}
+
+function recordField(row, col){
+	if(stepsTaken[stepWPointer][2] == undefined){
+		stepsTaken[stepWPointer].push([]);
+	}
+	stepsTaken[stepWPointer][2].push([row, col]);
+}
+
+function playbackStep(step){
+	if(step >= stepsTaken.length){return;}
+	if(step > stepRPointer){
+		let stepList = document.getElementById("stepList");
+		if(step > stepList.childNodes.length-1){
+			let nextStep = document.createElement("div");
+			if(stepsTaken[step][0] > -1){
+				nextStep.innerHTML = "<b> Step " + (step+1) + ":</b><br>" + stringifyStep(step) + "<br><br>";
+			} else {
+				nextStep.innerHTML = stepsTaken[step][1];
+			}
+			stepList.appendChild(nextStep);
+			stepList.scrollTop = stepList.scrollHeight;
+		} else {	//If it's not last, we need to start re-enabling steps
+			let lastStep = stepList.lastChild;
+			while(lastStep.previousSibling != null && lastStep.previousSibling.classList.contains("disabled")){
+				lastStep = lastStep.previousSibling;
+			}
+			lastStep.classList.remove("disabled");
+			lastStep.scrollIntoView();
+		}
+		displayStep(step);
+		stepRPointer++;
+	}
+	if(step < stepRPointer){
+		let stepList = document.getElementById("stepList");
+		let lastStep = stepList.lastChild;
+		while(lastStep.classList.contains("disabled")){
+			if(lastStep.previousSibling == null){return;}
+			lastStep = lastStep.previousSibling;
+		}
+		lastStep.classList.add("disabled");
+		lastStep.previousSibling.scrollIntoView();
+		displayStep(step);
+		stepRPointer--;
+	}
+}
+
+function stringifyStep(step){
+	if(step < 0 || step >= stepsTaken.length){return "Step " + step + " out of bounds";}
+	let message = stepsTaken[step][1];
+	if(stepsTaken[step][2].length == 1){return message.replace("%",  "cell (" + stepsTaken[step][2][0][0] + ", " +  stepsTaken[step][2][0][1] + ") ");}
+	let cells = "cells ";
+	for(let i = 0; i < stepsTaken[step][2].length-2; i++){
+		cells += "(" + stepsTaken[step][2][i][0] + ", " + stepsTaken[step][2][i][1]	+ "), ";
+	}
+	cells += 	"(" + stepsTaken[step][2][stepsTaken[step][2].length-2][0] + ", " +  stepsTaken[step][2][stepsTaken[step][2].length-2][1] + ")" +
+				" and (" + stepsTaken[step][2][stepsTaken[step][2].length-1][0] + ", " +  stepsTaken[step][2][stepsTaken[step][2].length-1][1] + ")";
+	return message.replace("%", cells);
+}
+
+function readPrevStep(){
+	if(stepRPointer > 0){
+		playbackStep(stepRPointer-1);
+	}
+}
+
+function readNextStep(){
+	if(!solved){
+		solve();
+	}
+	if(stepRPointer < stepsTaken.length){
+		playbackStep(stepRPointer + 1);
+	}
+}
+
+function displayStep(step){
+	if(step > 0){
+		stepsTaken[step-1][2].forEach(cell => {
+			if(document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('new')){
+				document.getElementById(cell[0] + ', ' + cell[1]).classList.remove('new');
+			}
+		});
+	}
+	//If at the last step, stop.
+	if(step >= stepsTaken.length-1){return;}
+	stepsTaken[step][2].forEach(cell => {
+		if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('new')){
+			document.getElementById(cell[0] + ', ' + cell[1]).classList.add('new');
+		}
+	});
+	switch(stepsTaken[step][0]){
+		case 0:
+			//Emptying cells
+			stepsTaken[step][2].forEach(cell => {
+				if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('emptied')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.add('emptied');
+				}
+				document.getElementById(cell[0] + ', ' + cell[1]).innerHTML = '.';
+			});
+			break;	
+		case 1:
+			//Filling cells
+			stepsTaken[step][2].forEach(cell => {
+				if(!document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('filled')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.add('filled');
+				}
+			});
+			break;
+		default: 
+			return;
+	}
+	switch(stepsTaken[step+1][0]){
+		case 0:
+			//Emptying cells
+			stepsTaken[step+1][2].forEach(cell => {
+				if(document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('emptied')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.remove('emptied');
+				}
+				document.getElementById(cell[0] + ', ' + cell[1]).innerHTML = '';
+			});
+			break;	
+		case 1:
+			//Filling cells
+			stepsTaken[step+1][2].forEach(cell => {
+				if(document.getElementById(cell[0] + ', ' + cell[1]).classList.contains('filled')){
+					document.getElementById(cell[0] + ', ' + cell[1]).classList.remove('filled');
+				}
+			});
+			break;
+		default: 
+			return;
+	}
+}
+
+function fullSolve(){
+	if(!solved){
+		solve();
+	}
+	while(stepRPointer < stepsTaken.length-1){
+		readNextStep();
+	}
+}
+
 function solve(){
+	document.getElementById("explanationText").style.visibility = "hidden";
 	console.log("Solving started.");
-	console.log(testingArray);
+	// console.log(testingArray);
 
 	makeArray();
-	console.log(testingArray);
+	// console.log(testingArray);
 
-	console.log(puzzleArray);
+	// console.log(puzzleArray);
 	//Starting checks (fields which can be deduced from just the initial board state)
 	runThroughOnes();
 	checkDiagonals();
 	checkNearAdjacency();
-	console.log(testingArray);
+	// console.log(testingArray);
 	
 	//Start regular solving loop
 
@@ -326,14 +599,14 @@ function solve(){
 		//Make sure we aren't creating any 2x2 filled spaces (simple check so it's good to run first and often)
 		searchForFilled2x2s();
 		
-		if(!changed){
-			//Find cells that cannot be marked blank, mark them as filled instead
-			searchStarvedCells();
-		}
-
 		//For all hints, check if the hint can fill its own space
 		if(!changed){
 			expandHintAreas();	
+		}
+		
+		if(!changed){
+			//Find cells that cannot be marked blank, mark them as filled instead
+			searchStarvedCells();
 		}
 		
 		//Make sure all filled areas can escape enclosed spaces
@@ -367,9 +640,16 @@ function solve(){
 		// 	fillAlongEdge();
 		// }
 	}
-	console.log(puzzleArray);
+	// console.log(puzzleArray);
 	
+	if(checkCompletion()){
+		recordStep(0);
+	} else {
+		alert(	"The program was unable to solve this board. This may either be due to this program being incomplete, or the board being unsolveable.\n" +
+				"Please check the board or select another one, and try again.");
+	}
 
+	solved = true;
 }
 
 function makeArray(){
@@ -379,7 +659,7 @@ function makeArray(){
 
 	largestField = 0;
 
-	console.log(rows + " " + cols);
+	// console.log(rows + " " + cols);
 	completedFields = [];
 	puzzleArray = [];
 	lowestFill = -1;
@@ -399,13 +679,21 @@ function makeArray(){
 			}
 		}
 	}
+	set = true;
+
+	stepsTaken = [];
+	stepWPointer = -1;
+	stepRPointer = -1;
+	while(document.getElementById("stepList").childElementCount){
+		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
+	}
 }
 
 function runThroughOnes(){
 	for (let row = 0; row < puzzleArray.length; row++) {
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] == 1){
-				console.log("Cell at (" + row + ', ' + col + ") contains a 1, therefore it shouldn't have any blank space adjacent to it.");
+				recordStep(1);
 				markCell(row-1, col);
 				markCell(row, col-1);
 				markCell(row, col+1);
@@ -420,22 +708,26 @@ function checkDiagonals(){
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 0){
 				if(row > 0 && col > 0 && puzzleArray[row-1][col-1] > 0){ //Top-left
-					console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row-1, col);		
 					markCell(row, col-1);
 				}
 				if(row > 0 && col < puzzleArray[row].length-1 && puzzleArray[row-1][col+1] > 0){ //Top-right
-					console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row-1, col);
 					markCell(row, col+1);
 				}
 				if(row < puzzleArray.length-1 && col > 0 && puzzleArray[row+1][col-1] > 0){ //Bottom-left
-					console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row+1, col);
 					markCell(row, col-1);
 				}
 				if(row < puzzleArray.length-1 && col < puzzleArray[row].length-1 && puzzleArray[row+1][col+1] > 0){ //Bottom-right
-					console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					recordStep(2);
 					markCell(row+1, col);
 					markCell(row, col+1);
 				}
@@ -448,6 +740,7 @@ function markCell(row, col){
 	if(row >= 0 && row < puzzleArray.length){
 		if(col >= 0 && col < puzzleArray[row].length){
 			if(puzzleArray[row][col] <= -2){return;}
+			recordField(row, col);
 			lowestFill--; indivCells++;
 			puzzleArray[row][col] = lowestFill;
 			if(puzzleArray[row][col] < -1){
@@ -481,10 +774,10 @@ function markCell(row, col){
 				if(puzzleArray[row][col] != lowestFill){
 					lowestFill++; indivCells--;
 				}
-				if(!document.getElementById(row + ', ' + col).classList.contains('filled')){
-					document.getElementById(row + ', ' + col).classList.add('filled');
-					//console.log("cell " + row + ", " + col + " filled");
-				}
+				// if(!document.getElementById(row + ', ' + col).classList.contains('filled')){
+				// 	document.getElementById(row + ', ' + col).classList.add('filled');
+				// 	//console.log("cell " + row + ", " + col + " filled");
+				// }
 				reMark(row, col);
 			}
 		}
@@ -580,11 +873,13 @@ function checkNearAdjacency(){
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 0){
 				if(col < puzzleArray[row].length-2 && puzzleArray[row][col+2] > 0){ //2 spaces left
-					console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					// console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					recordStep(3);
 					markCell(row, col+1);		
 				}
 				if(row < puzzleArray.length-2 && puzzleArray[row+2][col] > 0){ //2 spaces down
-					console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					// console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					recordStep(3);
 					markCell(row+1, col);
 				}
 			}
@@ -609,8 +904,9 @@ function searchStarvedCells(){
 
 			if(checkCellDistance(row, col)){
 				//If there are any starved cells, mark them
+				recordStep(5);
 				markCell(row, col);
-				console.log("Cell at (" + row + ", " + col + ") is starved.");
+				//console.log("Cell at (" + row + ", " + col + ") is starved.");
 			}
 		}
 	}
@@ -717,16 +1013,18 @@ function searchForFilled2x2s(){
 				
 				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row-1][col-1] == 0){
+						recordStep(4);
 						markCellBlank(row-1, col-1);
-						console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
 
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row-1][col+1] == 0){
+						recordStep(4);
 						markCellBlank(row-1, col+1);
-						console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
@@ -737,16 +1035,18 @@ function searchForFilled2x2s(){
 				
 				if(col > 0 && puzzleArray[row][col-1] < -1){
 					if(puzzleArray[row+1][col-1] == 0){						
+						recordStep(4);
 						markCellBlank(row+1, col-1);
-						console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
 
 				if(col < (puzzleArray[row].length-1) && puzzleArray[row][col+1] < -1){
 					if(puzzleArray[row+1][col+1] == 0){
+						recordStep(4);
 						markCellBlank(row+1, col+1);
-						console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
@@ -759,14 +1059,17 @@ function searchForFilled2x2s(){
 }
 
 function markCellBlank(row, col){
-	if(!document.getElementById(row + ', ' + col).classList.contains('emptied')){
-		document.getElementById(row + ', ' + col).classList.add('emptied');
-	}
+	// if(!document.getElementById(row + ', ' + col).classList.contains('emptied')){
+	// 	document.getElementById(row + ', ' + col).classList.add('emptied');
+	// }
 	if(puzzleArray[row][col] > 0){
 		return;
 	}
+	if(puzzleArray[row][col] == 0){
+		recordField(row, col);
+	}
 	puzzleArray[row][col] = -1;
-	document.getElementById(row + ', ' + col).innerHTML = '.';
+	// document.getElementById(row + ', ' + col).innerHTML = '.';
 	//Check cells around the marked one for other marked cells
 	if(row > 0 && puzzleArray[row-1][col] > 0){
 		if(puzzleArray[row-1][col] > puzzleArray[row][col])
@@ -972,10 +1275,10 @@ function expandHintArea(dRow, dCol){
 
 	// console.log("Fields left");
 	// console.log(commonFields);
+	recordStep(6);
 	for(let i = 0; i < commonFields.length; i++){
 		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
 		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
-			puzzleArray[commonFields[i][0]][commonFields[i][1]] = -1;
 			markCellBlank(commonFields[i][0], commonFields[i][1]);		
 		}
 		//This may require an external relation for tougher boards?
@@ -983,6 +1286,7 @@ function expandHintArea(dRow, dCol){
 
 	//If a field has been expanded completely, fill the empty cells around it
 	if(commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
+		recordStep(7);
 		for(let i = 0; i < commonFields.length; i++){
 			if(commonFields[i][0] > 0 && puzzleArray[commonFields[i][0]-1][commonFields[i][1]] == 0){
 				markCell(commonFields[i][0]-1,[commonFields[i][1]]);
@@ -1002,6 +1306,7 @@ function expandHintArea(dRow, dCol){
 	}
 
 	//Otherwise, fill all the cells they have in common
+	recordStep(8);
 	for(let i = 0; i < border.length; i++){
 		markCell(border[i][0], border[i][1]);
 	}
@@ -1213,12 +1518,12 @@ function printPermutation(array){
 		}	
 		output += '\n';
 	}
-	console.log(output);
+	// console.log(output);
 }
 
 function checkAllFilledAreaEscapes(){
 	if(!puzzleArray.some((row) => row.some((cell) => cell < -2))){
-		console.log("No filled cells are separate from the main area");
+		// console.log("No filled cells are separate from the main area");
 		return;
 	}
 
@@ -1232,7 +1537,7 @@ function checkAllFilledAreaEscapes(){
 			}
 		}
 	}
-	console.log((changed ? "Something's " : "Nothing's ") + "changed!");
+	// console.log((changed ? "Something's " : "Nothing's ") + "changed!");
 }
 
 
@@ -1297,6 +1602,7 @@ function checkFilledAreaEscape(row, col){
 	// console.log("escapes");
 	// console.log(escapes);
 	if(escapes.length == 1){
+		recordStep(9);
 		markCell(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
 		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
@@ -1393,6 +1699,7 @@ function checkClaimableAreaEscape(row, col){
 	// console.log("escapes");
 	// console.log(escapes);
 	if(escapes.length == 1){
+		recordStep(10);
 		markCellBlank(escapes[0][0], escapes[0][1]);
 		//If marking the cell combined it with another cell, we can stop investigating.
 		if(puzzleArray[escapes[0][0]][escapes[0][1]] != puzzleArray[filledArea[0][0]][filledArea[0][1]])
@@ -1465,7 +1772,7 @@ function connectUnassignedFields(){
 	//All empty unassigned fields are going to be grouped together, then each one is going to search for all paths leading to a (valid) field
 	//Then all common cells between the two are going to be marked as empty
 
-	console.log("CUF");
+	// console.log("CUF");
 
 	let claimableCells = [];
 	let claimableCellClusters = [];
@@ -1478,7 +1785,7 @@ function connectUnassignedFields(){
 		}
 	}
 
-	console.log(claimableCells);
+	// console.log(claimableCells);
 
 
 	//Group all joined cells together before moving on
@@ -1540,7 +1847,7 @@ function findUFieldConnection(claimableCellCluster){
 	let validPaths = [];
 
 	edgeCells.forEach((cell) => {
-		console.log("pathing from cell " + cell[0] + ", " + cell[1]);
+		// console.log("pathing from cell " + cell[0] + ", " + cell[1]);
 		pathToValidHint(cell[0], cell[1], validPaths, size);
 	});
 
@@ -1558,6 +1865,7 @@ function findUFieldConnection(claimableCellCluster){
 	// console.log("Fields left");
 	// console.log(commonFields);
 	for(let i = 0; i < commonFields.length; i++){
+		recordStep(11);
 		//Whatever fields are left, we mark them as empty. If they touch the original field, mark it as a part
 		if(puzzleArray[commonFields[i][0]][commonFields[i][1]] == 0){
 			markCellBlank(commonFields[i][0], commonFields[i][1]);		
@@ -1635,18 +1943,22 @@ function pathToValidHint(row, col, paths, distance){
 function checkCorners(){
 	if(puzzleArray[0][0] == 0){
 		if(	(puzzleArray[0][1] == -1 || puzzleArray[0][1] > 0) && (puzzleArray[1][0] == -1 || puzzleArray[1][0] > 0)){
+			recordStep(12);
 			markCellBlank(0, 0);
 		}
 		if(	puzzleArray[0][1] <= -2 && puzzleArray[1][0] <= -2){
+			recordStep(13);
 			markCell(0,0);
 		}
 	}
 	if(puzzleArray[0][puzzleArray[0].length-1] == 0){
 		if(	(puzzleArray[0][puzzleArray[0].length-2] == -1 || puzzleArray[0][puzzleArray[0].length-2] > 0) && 
 			(puzzleArray[1][puzzleArray[0].length-1] == -1 || puzzleArray[1][puzzleArray[0].length-1] > 0)){
+			recordStep(12);
 			markCellBlank(0, puzzleArray[0].length-1);
 		}
 		if(	puzzleArray[0][puzzleArray[0].length-2] <= -2 && puzzleArray[1][puzzleArray[0].length-1] <= -2){
+			recordStep(13);
 			markCell(0,puzzleArray[0].length-1);
 		}
 	}
@@ -1654,18 +1966,22 @@ function checkCorners(){
 	if(puzzleArray[puzzleArray.length-1][0] == 0){
 		if(	(puzzleArray[puzzleArray.length-1][1] == -1 || puzzleArray[puzzleArray.length-1][1] > 0) && 
 			(puzzleArray[puzzleArray.length-2][0] == -1 || puzzleArray[puzzleArray.length-2][0] > 0)){
+			recordStep(12);
 			markCellBlank(puzzleArray.length-1, 0);
 		}
 		if(	puzzleArray[puzzleArray.length-1][1] <= -2 && puzzleArray[puzzleArray.length-2][0] <= -2){
+			recordStep(13);
 			markCell(puzzleArray.length-1,0);
 		}
 	}
 	if(puzzleArray[puzzleArray.length-1][puzzleArray[0].length-1] == 0){
 		if(	(puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] == -1 || puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] > 0) && 
 			(puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] == -1 || puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] > 0)){
+			recordStep(12);
 			markCellBlank(puzzleArray.length-1, puzzleArray[0].length-1);
 		}
 		if(	puzzleArray[puzzleArray.length-1][puzzleArray[0].length-2] <= -2 && puzzleArray[puzzleArray.length-2][puzzleArray[0].length-1] <= -2){
+			recordStep(13);
 			markCell(puzzleArray.length-1,puzzleArray[0].length-1);
 		}
 	}
@@ -1702,6 +2018,32 @@ function calculateBorder(permutation){
 	return border;
 }
 
+function checkCompletion(){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			//More than 1 wall?
+			if(puzzleArray[row][col] < -2){
+				return false;
+			}
+			//Any empty or unclaimed blanks?
+			if(puzzleArray[row][col] == -1 || puzzleArray[row][col] == 0){
+				return false;
+			}
+			//All field sizes correct?
+			if(puzzleArray[row][col] > 0 && puzzleArray[row][col] != fieldSize(row, col)){
+				return false;
+			}
+			if(	row > 0 && col > 0 &&
+				puzzleArray[row][col] == -2 && puzzleArray[row-1][col] == -2 &&
+				puzzleArray[row][col-1] == -2 && puzzleArray[row-1][col-1] == -2)
+			{
+				return false
+			}
+		}
+	}
+	return true;
+}
+
 //Function to make sure that filled cells don't get "trapped" by blank cells?
 function fillAlongEdge(){
 	let testingArray = []
@@ -1712,7 +2054,7 @@ function fillAlongEdge(){
 		}
 		
 	}
-	console.log(testingArray);
+	// console.log(testingArray);
 
 	//Any hints adjacent to the edge must be given ample space
 	//Test vertical first
@@ -1803,8 +2145,8 @@ function fillAlongEdge(){
 
 	
 
-	console.log(testingArray);
-	printPermutation(testingArray);
+	// console.log(testingArray);
+	// printPermutation(testingArray);
 	
 	//Use this information to extend the walls 
 

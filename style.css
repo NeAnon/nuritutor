@@ -73,3 +73,61 @@ body{
 .examples{
 	color: white;
 }
+
+.marklist{
+	outline:gray 1px solid;
+	width:300px;
+	/* display:block; */
+	display: flex;
+	flex-direction: column;
+}
+
+.steplist{
+	outline: gray 1px solid;
+	min-height: 10px;
+	display: block;
+	overflow: auto;
+	flex:auto;
+}
+
+.steplist div{
+	color:white;
+	border-bottom: gray 1px solid;
+	padding-left:5px;
+	padding-top:2px;
+}
+
+.header{
+	color:white;
+	text-align: center;
+	outline: gray 1px solid;
+	/* max-height: 10px; */
+	min-height: none;
+	height:fit-content;
+	flex: initial;
+}
+
+.footer{
+	outline: gray 1px solid;
+	/* max-height: 10px; */
+	min-height: none;
+	flex: initial;
+}
+
+.separator{
+	width:10px;
+	height:10px;
+}
+
+.steplist div.disabled {
+	font-style: italic;
+	color: gray;
+}
+
+.filled.new {
+	background-color: rgb(0, 255, 0);
+}
+
+.emptied.new {
+	color:rgb(0, 255, 0);
+}
