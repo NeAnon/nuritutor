@@ -12,9 +12,11 @@ let stepWPointer; let stepRPointer;
 function initializePage(){
 	console.log("Page initialized!");    
 
-	document.getElementById("solver").onclick = solve;
+	document.getElementById("solver").onclick = fullSolve;
 	document.getElementById("resizer").onclick = createGrid;
-	document.getElementById("debug").onclick = debugFilledCells;
+	if(document.getElementById("debug")){
+		document.getElementById("debug").onclick = debugFilledCells;
+	}
 
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
@@ -70,6 +72,8 @@ function initializePage(){
 	while(document.getElementById("stepList").childElementCount){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
+
+	document.getElementById("explanationText").style.color = "white";
 }
 
 function clearBoard(){
@@ -112,7 +116,7 @@ function createGrid(){
 					selectedCell = null;
 				}
 				selectedCell = cell.id;
-				console.log(selectedCell);
+				// console.log(selectedCell);
 				cell.classList.add("selected");
 			});
 			row.appendChild(cell);
@@ -154,7 +158,7 @@ function initializeExampleButtons(){
 		if(child.nodeName == "BUTTON"){
 			child.addEventListener("click", ()=>{
 				setExampleBoard(child.id);
-				console.log(testingArray);
+				// console.log(testingArray);
 
 			});
 		}
@@ -162,7 +166,7 @@ function initializeExampleButtons(){
 }
 
 function setExampleBoard(exampleName){
-	console.log(exampleName);
+	// console.log(exampleName);
 	if(exampleName == "sample1"){
 		
 
@@ -562,19 +566,29 @@ function displayStep(step){
 	}
 }
 
+function fullSolve(){
+	if(!solved){
+		solve();
+	}
+	while(stepRPointer < stepsTaken.length-1){
+		readNextStep();
+	}
+}
+
 function solve(){
+	document.getElementById("explanationText").style.visibility = "hidden";
 	console.log("Solving started.");
-	console.log(testingArray);
+	// console.log(testingArray);
 
 	makeArray();
-	console.log(testingArray);
+	// console.log(testingArray);
 
-	console.log(puzzleArray);
+	// console.log(puzzleArray);
 	//Starting checks (fields which can be deduced from just the initial board state)
 	runThroughOnes();
 	checkDiagonals();
 	checkNearAdjacency();
-	console.log(testingArray);
+	// console.log(testingArray);
 	
 	//Start regular solving loop
 
@@ -626,7 +640,7 @@ function solve(){
 		// 	fillAlongEdge();
 		// }
 	}
-	console.log(puzzleArray);
+	// console.log(puzzleArray);
 	
 	if(checkCompletion()){
 		recordStep(0);
@@ -645,7 +659,7 @@ function makeArray(){
 
 	largestField = 0;
 
-	console.log(rows + " " + cols);
+	// console.log(rows + " " + cols);
 	completedFields = [];
 	puzzleArray = [];
 	lowestFill = -1;
@@ -694,25 +708,25 @@ function checkDiagonals(){
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 0){
 				if(row > 0 && col > 0 && puzzleArray[row-1][col-1] > 0){ //Top-left
-					console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row-1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					recordStep(2);
 					markCell(row-1, col);		
 					markCell(row, col-1);
 				}
 				if(row > 0 && col < puzzleArray[row].length-1 && puzzleArray[row-1][col+1] > 0){ //Top-right
-					console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row-1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					recordStep(2);
 					markCell(row-1, col);
 					markCell(row, col+1);
 				}
 				if(row < puzzleArray.length-1 && col > 0 && puzzleArray[row+1][col-1] > 0){ //Bottom-left
-					console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row+1) + ", " + (col-1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					recordStep(2);
 					markCell(row+1, col);
 					markCell(row, col-1);
 				}
 				if(row < puzzleArray.length-1 && col < puzzleArray[row].length-1 && puzzleArray[row+1][col+1] > 0){ //Bottom-right
-					console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
+					// console.log("Cells ("+ (row+1) +", "+ (col+1) + ") and (" +  row + ", " + col + ") are diagonally adjacent. Therefore the cells between them should be filled");
 					recordStep(2);
 					markCell(row+1, col);
 					markCell(row, col+1);
@@ -859,12 +873,12 @@ function checkNearAdjacency(){
 		for (let col = 0; col < puzzleArray[row].length; col++) {
 			if(puzzleArray[row][col] > 0){
 				if(col < puzzleArray[row].length-2 && puzzleArray[row][col+2] > 0){ //2 spaces left
-					console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					// console.log("Cells ("+ row + ", " + col + ") and (" +  row + ", " + (col+2) + ") are separated by a single cell. It should be filled, since neither region can contain it.");
 					recordStep(3);
 					markCell(row, col+1);		
 				}
 				if(row < puzzleArray.length-2 && puzzleArray[row+2][col] > 0){ //2 spaces down
-					console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
+					// console.log("Cells ("+ row +", "+ col + ") and (" +  (row+2) + ", " + col + ") are separated by a single cell. It should be filled, since neither region can contain it.");
 					recordStep(3);
 					markCell(row+1, col);
 				}
@@ -892,7 +906,7 @@ function searchStarvedCells(){
 				//If there are any starved cells, mark them
 				recordStep(5);
 				markCell(row, col);
-				console.log("Cell at (" + row + ", " + col + ") is starved.");
+				//console.log("Cell at (" + row + ", " + col + ") is starved.");
 			}
 		}
 	}
@@ -1001,7 +1015,7 @@ function searchForFilled2x2s(){
 					if(puzzleArray[row-1][col-1] == 0){
 						recordStep(4);
 						markCellBlank(row-1, col-1);
-						console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row-1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
@@ -1010,7 +1024,7 @@ function searchForFilled2x2s(){
 					if(puzzleArray[row-1][col+1] == 0){
 						recordStep(4);
 						markCellBlank(row-1, col+1);
-						console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row-1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
@@ -1023,7 +1037,7 @@ function searchForFilled2x2s(){
 					if(puzzleArray[row+1][col-1] == 0){						
 						recordStep(4);
 						markCellBlank(row+1, col-1);
-						console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row+1) + ", " + (col-1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
@@ -1032,7 +1046,7 @@ function searchForFilled2x2s(){
 					if(puzzleArray[row+1][col+1] == 0){
 						recordStep(4);
 						markCellBlank(row+1, col+1);
-						console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
+						// console.log("Cell at (" + (row+1) + ", " + (col+1) + ") is blank, else this area is a 2x2 of filled cells.");
 						return;
 					}
 				}
@@ -1504,12 +1518,12 @@ function printPermutation(array){
 		}	
 		output += '\n';
 	}
-	console.log(output);
+	// console.log(output);
 }
 
 function checkAllFilledAreaEscapes(){
 	if(!puzzleArray.some((row) => row.some((cell) => cell < -2))){
-		console.log("No filled cells are separate from the main area");
+		// console.log("No filled cells are separate from the main area");
 		return;
 	}
 
@@ -1523,7 +1537,7 @@ function checkAllFilledAreaEscapes(){
 			}
 		}
 	}
-	console.log((changed ? "Something's " : "Nothing's ") + "changed!");
+	// console.log((changed ? "Something's " : "Nothing's ") + "changed!");
 }
 
 
@@ -1758,7 +1772,7 @@ function connectUnassignedFields(){
 	//All empty unassigned fields are going to be grouped together, then each one is going to search for all paths leading to a (valid) field
 	//Then all common cells between the two are going to be marked as empty
 
-	console.log("CUF");
+	// console.log("CUF");
 
 	let claimableCells = [];
 	let claimableCellClusters = [];
@@ -1771,7 +1785,7 @@ function connectUnassignedFields(){
 		}
 	}
 
-	console.log(claimableCells);
+	// console.log(claimableCells);
 
 
 	//Group all joined cells together before moving on
@@ -1833,7 +1847,7 @@ function findUFieldConnection(claimableCellCluster){
 	let validPaths = [];
 
 	edgeCells.forEach((cell) => {
-		console.log("pathing from cell " + cell[0] + ", " + cell[1]);
+		// console.log("pathing from cell " + cell[0] + ", " + cell[1]);
 		pathToValidHint(cell[0], cell[1], validPaths, size);
 	});
 
@@ -2040,7 +2054,7 @@ function fillAlongEdge(){
 		}
 		
 	}
-	console.log(testingArray);
+	// console.log(testingArray);
 
 	//Any hints adjacent to the edge must be given ample space
 	//Test vertical first
@@ -2131,8 +2145,8 @@ function fillAlongEdge(){
 
 	
 
-	console.log(testingArray);
-	printPermutation(testingArray);
+	// console.log(testingArray);
+	// printPermutation(testingArray);
 	
 	//Use this information to extend the walls 
 
