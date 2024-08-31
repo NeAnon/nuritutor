@@ -17,6 +17,13 @@ function initializePage(){
 	if(document.getElementById("debug")){
 		document.getElementById("debug").onclick = debugFilledCells;
 	}
+	document.getElementById("help").onclick = () => {alert(	"Click on any cell in the board to select it.\n" +
+															"While a cell is selected, press keys 0-9 to write in a hint.\n"+
+															"You can also press Backspace to clear the cell.\n"+
+															"Press \"Next ▶\" to start walking through solving the board.\n"+
+															"Or press \"Solve\" to solve the whole board instantly.\n"+
+															"Keep in mind that changing hints when the board is solved resets any filled or blanked cells."
+	);};
 
 	document.getElementById("rowsInput").value = 10;
 	document.getElementById("colsInput").value = 10;
@@ -72,8 +79,6 @@ function initializePage(){
 	while(document.getElementById("stepList").childElementCount){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
-
-	document.getElementById("explanationText").style.color = "white";
 }
 
 function clearBoard(){
@@ -576,7 +581,6 @@ function fullSolve(){
 }
 
 function solve(){
-	document.getElementById("explanationText").style.visibility = "hidden";
 	console.log("Solving started.");
 	// console.log(testingArray);
 
