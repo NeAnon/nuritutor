@@ -142,6 +142,8 @@ function createGrid(){
 	//reinitialize step-menu height	
 	document.getElementById("stepList").style.setProperty("max-height", "none");
 	document.getElementById("stepList").style.setProperty("max-height", document.getElementById("stepList").offsetHeight + "px");
+
+	document.getElementById("state").innerHTML = "";
 }
 
 function destroyGrid(){
@@ -586,7 +588,7 @@ function fullSolve(){
 function solve(){
 	console.log("Solving started.");
 	// console.log(testingArray);
-
+	document.getElementById("state").innerHTML = "Solving...";
 	makeArray();
 	// console.log(testingArray);
 
@@ -651,10 +653,12 @@ function solve(){
 	
 	if(checkCompletion()){
 		recordStep(0);
+		document.getElementById("state").innerHTML = "Solved!";
 	} else {
 		alert(	"The program was unable to solve this board. This may either be due to this program being incomplete, or the board being unsolveable.\n" +
 				"Please check the board or select another one, and try again.");
 		recordStep(-1);
+		document.getElementById("state").innerHTML = "Nearly solved!";
 	}
 
 	solved = true;

@@ -131,3 +131,7 @@ body{
 .emptied.new {
 	color:rgb(0, 255, 0);
 }
+
+.solveLabel{
+	color:white;
+}
