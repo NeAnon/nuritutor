@@ -390,6 +390,9 @@ function recordStep(type){
 		stepWPointer--;
 	}
 	switch(type){
+		case -1:
+			stepsTaken.push([-1, "The board is now solved to the best of this program's ability."]);
+			break;
 		case 0:
 			stepsTaken.push([-1, "The board is now solved."]);
 			break;
@@ -651,6 +654,7 @@ function solve(){
 	} else {
 		alert(	"The program was unable to solve this board. This may either be due to this program being incomplete, or the board being unsolveable.\n" +
 				"Please check the board or select another one, and try again.");
+		recordStep(-1);
 	}
 
 	solved = true;
@@ -851,24 +855,28 @@ function reMark(row, col){
 	// }
 }
 
-function debugFilledCells(){
-	let filledCells = document.getElementsByClassName("filled");
-	//console.log(filledCells);
-	if(filledCells[0].innerHTML == ""){
-		for(let i = 0; i < filledCells.length; i++){
-			// console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
-			filledCells[i].innerHTML = puzzleArray[parseInt(filledCells[i].id.split(',')[0])][parseInt(filledCells[i].id.split(',')[1])];
+function debugFilledCells(toggle = false){
+	for (let row = 0; row < puzzleArray.length; row++) {
+		for (let col = 0; col < puzzleArray[row].length; col++) {
+			if(puzzleArray[row][col] == -1 || (puzzleArray[row][col] > 0 && document.getElementById(row+', '+col).innerHTML == '')){
+				if(document.getElementById(row+', '+col).classList.contains('emptied') && toggle){
+					document.getElementById(row+', '+col).classList.remove('emptied');
+					document.getElementById(row+', '+col).innerHTML = '';
+				}else{				
+					document.getElementById(row+', '+col).classList.add('emptied')
+					document.getElementById(row+', '+col).innerHTML = '.';
+				}
+			}
+			if(puzzleArray[row][col] < -1){
+				if(document.getElementById(row+', '+col).classList.contains('filled') && toggle){
+					document.getElementById(row+', '+col).classList.remove('filled');
+					document.getElementById(row+', '+col).innerHTML = '';
+				}else{				
+					document.getElementById(row+', '+col).classList.add('filled')
+					document.getElementById(row+', '+col).innerHTML = puzzleArray[row][col];
+				}
+			}
 		}
-		console.log(puzzleArray);
-		return;
-	}
-	else{
-		for(let i = 0; i < filledCells.length; i++){
-			// console.log("Getting element of id " + parseInt(filledCells[i].id.split(',')[0]) + ", " + parseInt(filledCells[i].id.split(',')[1]));
-			filledCells[i].innerHTML = "";
-		}
-		console.log(puzzleArray);
-		return;
 	}
 }
 
@@ -1475,7 +1483,7 @@ function expand(expansion, possibleStates, claimableCellClusters){
 				//If this expansion exceeds the total area a field can take up, we remove all of these values and don't count the expansion attempt, 
 				//marking the cells accordingly.
 				if(expansion.length > testingArray[expansion[0][0]][expansion[0][1]]){
-					while(JSON.stringify(claimableCellClusters[i]).indexOf(JSON.stringify(expansion[expansion.length-1]))){
+					while(JSON.stringify(claimableCellClusters[i]).indexOf(JSON.stringify(expansion[expansion.length-1])) != -1){
 						testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
 						expansion.pop();
 					}
@@ -1992,6 +2000,7 @@ function checkCorners(){
 }
 
 function calculateBorder(permutation){
+	if(!permutation){return [];}
 	//Disable for now, not sure if the reward is worth the effort
 	let border = [];	//return border;
 	//console.log("permutation:");
