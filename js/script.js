@@ -1869,6 +1869,7 @@ function findUFieldConnection(claimableCellCluster){
 
 
 	//If some fields are common among all paths, they'll have to be filled in
+	if(validPaths.length <= 0){return;}
 	let commonFields = JSON.parse(JSON.stringify(validPaths[0]));
 	for(let i = 0; i < validPaths.length; i++) {
 		for(let j = 0; j < commonFields.length; j++) {
