@@ -1488,9 +1488,12 @@ function expand(expansion, possibleStates, claimableCellClusters){
 				//marking the cells accordingly.
 				if(expansion.length > testingArray[expansion[0][0]][expansion[0][1]]){
 					while(JSON.stringify(claimableCellClusters[i]).indexOf(JSON.stringify(expansion[expansion.length-1])) != -1){
-						testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
+						//testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
 						expansion.pop();
 					}
+					//Mark the last cell as wrong too, and don't allow another approach to the cluster.
+					testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
+					expansion.pop();
 				}
 			}
 		}
