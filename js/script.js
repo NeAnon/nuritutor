@@ -79,6 +79,12 @@ function initializePage(){
 	while(document.getElementById("stepList").childElementCount){
 		document.getElementById("stepList").removeChild(document.getElementById("stepList").lastChild);
 	}
+
+	document.addEventListener("click", () => {
+		if(document.getElementsByClassName("selected").length > 0){
+			document.getElementsByClassName("selected")[0].classList.remove("selected");
+		}
+	})
 }
 
 function clearBoard(){
@@ -115,7 +121,7 @@ function createGrid(){
 			let cell = document.createElement("div");
 			cell.id = i + ", " + j;
 			cell.classList.add("cell");
-			cell.addEventListener("click", ()=>{
+			cell.addEventListener("click", (e)=>{
 				if(selectedCell){
 					document.getElementById(selectedCell).classList.remove("selected");
 					selectedCell = null;
@@ -123,6 +129,7 @@ function createGrid(){
 				selectedCell = cell.id;
 				// console.log(selectedCell);
 				cell.classList.add("selected");
+				e.stopPropagation();	
 			});
 			row.appendChild(cell);
 		}
@@ -605,19 +612,24 @@ function solve(){
 	while(changed){
 		changed = false;
 
-		//Make sure we aren't creating any 2x2 filled spaces (simple check so it's good to run first and often)
-		searchForFilled2x2s();
-		
-		//For all hints, check if the hint can fill its own space
-		if(!changed){
-			expandHintAreas();	
-		}
+		//Check corners. This is mostly just for the sake of completeness (and really quick)
+		checkCorners();
 		
 		if(!changed){
 			//Find cells that cannot be marked blank, mark them as filled instead
 			searchStarvedCells();
 		}
 		
+		if(!changed){
+			//Make sure we aren't creating any 2x2 filled spaces (simple check so it's good to run first and often)
+			searchForFilled2x2s();
+		}
+		
+		//For all hints, check if the hint can fill its own space
+		if(!changed){
+			expandHintAreas();	
+		}
+
 		//Make sure all filled areas can escape enclosed spaces
 		if(!changed){
 			checkAllFilledAreaEscapes();
@@ -633,11 +645,6 @@ function solve(){
 			connectUnassignedFields();
 		}
 		
-		//Check corners. This is mostly just for the sake of completeness
-		if(!changed){
-			checkCorners();
-		}
-
 		//Add check for common borders (cells which will be filled no matter which permutation for a filled field is the correct one)
 
 		//Add borders between incomplete fields
@@ -1301,7 +1308,7 @@ function expandHintArea(dRow, dCol){
 	}
 
 	//If a field has been expanded completely, fill the empty cells around it
-	if(commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
+	if(false && commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
 		recordStep(7);
 		for(let i = 0; i < commonFields.length; i++){
 			if(commonFields[i][0] > 0 && puzzleArray[commonFields[i][0]-1][commonFields[i][1]] == 0){
@@ -1486,9 +1493,9 @@ function expand(expansion, possibleStates, claimableCellClusters){
 				}
 				//If this expansion exceeds the total area a field can take up, we remove all of these values and don't count the expansion attempt, 
 				//marking the cells accordingly.
-				if(expansion.length > testingArray[expansion[0][0]][expansion[0][1]]){
+				if(false && expansion.length > testingArray[expansion[0][0]][expansion[0][1]]){
 					while(JSON.stringify(claimableCellClusters[i]).indexOf(JSON.stringify(expansion[expansion.length-1])) != -1){
-						//testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
+						testingArray[expansion[expansion.length-1][0]][expansion[expansion.length-1][1]] *= -1;
 						expansion.pop();
 					}
 					//Mark the last cell as wrong too, and don't allow another approach to the cluster.
