@@ -1207,6 +1207,7 @@ function expandHintArea(dRow, dCol){
 		for(let j = 0; j < claimableCellClusters[claimableCellClusters.length-1].length; j++){
 			//For every cell, check if the surrounding cells are also claimable. If so, list the entire bunch as one cluster.
 			//No need for out of bounds checks, as it's performed before these are added to the list
+			//Index search courtesy of https://stackoverflow.com/a/69350238
 			let indexUp = claimableCells.findIndex(	function(element) { //Up				
 					return JSON.stringify(element) == JSON.stringify([claimableCellClusters[claimableCellClusters.length-1][j][0]-1, claimableCellClusters[claimableCellClusters.length-1][j][1]]);
 				});
@@ -1308,7 +1309,7 @@ function expandHintArea(dRow, dCol){
 	}
 
 	//If a field has been expanded completely, fill the empty cells around it
-	if(false && commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
+	if(commonFields.length == puzzleArray[commonFields[0][0]][commonFields[0][1]]){
 		recordStep(7);
 		for(let i = 0; i < commonFields.length; i++){
 			if(commonFields[i][0] > 0 && puzzleArray[commonFields[i][0]-1][commonFields[i][1]] == 0){
@@ -1576,6 +1577,7 @@ function checkFilledAreaEscape(row, col){
 		reMark(filledArea[i][0], filledArea[i][1]);
 		if(	filledArea[i][0] > 0){
 			if(	puzzleArray[filledArea[i][0]-1][filledArea[i][1]] == puzzleArray[filledArea[i][0]][filledArea[i][1]] && 
+				//Courtesy of https://stackoverflow.com/a/33210887
 				JSON.stringify(filledArea).indexOf(JSON.stringify([filledArea[i][0]-1, filledArea[i][1]])) == -1)
 			{
 				filledArea.push([filledArea[i][0]-1, filledArea[i][1]]);
@@ -1902,6 +1904,7 @@ function findUFieldConnection(claimableCellCluster){
 
 function pathToValidHint(row, col, paths, distance){
 	let startIndex = paths.length;
+
 	//Avoid linking together unmarked fields if we can help it
 	if(row > 0 && puzzleArray[row-1][col] >= 0){
 		//If we're reaching the limit with next field expanded into, there's no point continuing.
@@ -1917,6 +1920,7 @@ function pathToValidHint(row, col, paths, distance){
 			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
 		}
 	}	
+	//Same as above but left cell
 	if(col > 0 && puzzleArray[row][col-1] >= 0){
 		//If we're reaching the limit with next field expanded into, there's no point continuing.
 		if(puzzleArray[row][col-1] == 0 && distance < (largestField-1)){
@@ -1931,6 +1935,7 @@ function pathToValidHint(row, col, paths, distance){
 			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
 		}
 	}	
+	//Same as above but right cell
 	if(col < puzzleArray[row].length-1 && puzzleArray[row][col+1] >= 0){
 		//If we're reaching the limit with next field expanded into, there's no point continuing.
 		if(puzzleArray[row][col+1] == 0 && distance < (largestField-1)){
@@ -1945,6 +1950,7 @@ function pathToValidHint(row, col, paths, distance){
 			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
 		}
 	}
+	//Same as above but lower cell
 	if(row < puzzleArray.length-1 && puzzleArray[row+1][col] >= 0){
 		//If we're reaching the limit with next field expanded into, there's no point continuing.
 		if(puzzleArray[row+1][col] == 0 && distance < (largestField-1)){
@@ -1959,7 +1965,6 @@ function pathToValidHint(row, col, paths, distance){
 			return;	//Make sure we stop searching around this spot to save resources (it shouldn't be adjacent to anything anyway)
 		}
 	}	
-
 
 	//If any paths have been found, list the path taken there from the edge cell
 	for(let i = startIndex; i < paths.length; i++){
